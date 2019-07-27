@@ -30,7 +30,7 @@ public class SwingErrorPanel extends MyPanel{
         sketch1_Panel = new JPanel();
         Swing_Error_Parameter = new JPanel();
         
-        ChangeSpeed_Button = new JButton("修改速度");
+        SetSpeed_Button = new JButton("修改速度");
         singleRead_Button = new JButton("手动读取");
         change_Button = new JButton("修改坐标");
         autoRead_Button = new JButton("启动检测");
@@ -45,7 +45,7 @@ public class SwingErrorPanel extends MyPanel{
                 +"<br>"+"<br>"+s2+"<br>"+s2_1+"<br>"+s2_2+"<br>"+"<br>"+"<br>"+"<br>"+"<body></html>";
         parameter = new JLabel(strMsg);
                 
-        points_Panel.setBorder(BorderFactory.createTitledBorder("点位-指令-实际坐标"));
+        points_Panel.setBorder(BorderFactory.createTitledBorder("点位——指令、实际坐标"));
         result_Panel.setBorder(BorderFactory.createTitledBorder("检测结果"));
         sketch_Panel.setBorder(BorderFactory.createTitledBorder("实际和指令摆动轨迹示意图"));
         sketch1_Panel.setBorder(BorderFactory.createTitledBorder("所选平面内的摆动试验轨迹示意图"));
@@ -56,14 +56,14 @@ public class SwingErrorPanel extends MyPanel{
         
         points_Panel.setLayout(new BorderLayout());
 
-        button_Panel.add(ChangeSpeed_Button);
+        button_Panel.add(SetSpeed_Button);
         button_Panel.add(singleRead_Button);
         button_Panel.add(change_Button);
         button_Panel.add(autoRead_Button);
         button_Panel.add(breakAuto_Button);
         points_Panel.add(button_Panel,BorderLayout.SOUTH);
         
-        ChangeSpeed_Button.setEnabled(true);
+        SetSpeed_Button.setEnabled(true);
         singleRead_Button.setEnabled(false);
         change_Button.setEnabled(false);
         autoRead_Button.setEnabled(false);
@@ -250,7 +250,7 @@ public class SwingErrorPanel extends MyPanel{
         result_Table.setModel(result_tableModel);
         
         //修改速度
-        ChangeSpeed_Button.addActionListener(new ActionListener() {
+        SetSpeed_Button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 ChangeSpeed_ButtonActionPerformed(ae);
@@ -444,15 +444,21 @@ public class SwingErrorPanel extends MyPanel{
         if(trackerThread == null) {
             trackerThread = MyTracker.getTrackerThread();
         }
-        JDialog ChangeSpeed = new JDialog();
-        ChangeSpeed.setTitle("指令摆动速度设置");
-        ChangeSpeed.setLayout(null);
-        ChangeSpeed.setBounds(710, 190, 500, 500);
-        ChangeSpeed.setModal(true);
-        ChangeSpeed.setVisible(true);
-        ChangeSpeed.setEnabled(true);
-        ChangeSpeed.setResizable(false);
-
+        JDialog SetSpeed = new JDialog();
+        SetSpeed.setTitle("指令摆动速度设置");
+        SetSpeed.setLayout(null);
+        SetSpeed.setBounds(710, 190, 500, 500);
+        SetSpeed.setModal(true);
+        SetSpeed.setVisible(true);
+        SetSpeed.setEnabled(true);
+        SetSpeed.setResizable(false);
+        
+        
+        Speed_Label = new JLabel("指令速度：");
+        Speed_Value = new JLabel("0.000");
+        //Speed_Label.set
+        SetSpeed.add(Speed_Label);
+        SetSpeed.add(Speed_Value);
     }
     
     private void singleRead_ButtonActionPerformed(ActionEvent ae) {
@@ -517,10 +523,11 @@ public class SwingErrorPanel extends MyPanel{
     private JLabel WS_Value;
     private JLabel WF_Label;
     private JLabel WF_Value;
-    
+    private JLabel Speed_Label;
+    private JLabel Speed_Value;
 
     
-    private JButton ChangeSpeed_Button;
+    private JButton SetSpeed_Button;
     private JButton singleRead_Button;
     private JButton change_Button;
     private JButton autoRead_Button;
