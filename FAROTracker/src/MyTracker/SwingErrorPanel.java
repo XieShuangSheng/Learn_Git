@@ -35,12 +35,10 @@ public class SwingErrorPanel extends MyPanel{
         autoRead_Button = new JButton("启动检测");
         breakAuto_Button = new JButton("终止检测");
         
-        
-        SetSpeed_TextField = new DigitalMeter(10000,-10000,3);
         SetSpeed_Label = new JLabel("指令速度");
-        SetSpeed_Value = new JLabel("0.000");
-        SetSpeed_Value.setBorder(BorderFactory.createEtchedBorder());
-        SetSpeed_Value.setPreferredSize(new Dimension(100,30));
+        SetSpeed_TextField = new JTextField("20.0",8);
+        //SetSpeed_TextField .setBorder(BorderFactory.createEtchedBorder());
+        //SetSpeed_TextField .setPreferredSize(new Dimension(100,30));
         
         ImageIcon SwingError_img;
         ImageIcon SwingError1_img;
@@ -68,15 +66,9 @@ public class SwingErrorPanel extends MyPanel{
         button_Panel.add(change_Button);
         button_Panel.add(autoRead_Button);
         button_Panel.add(breakAuto_Button);
-        
-        JPanel SetSpeed_Panel = new JPanel();
-        SetSpeed_Panel.setLayout(new BorderLayout());
-        SetSpeed_Panel.setBounds(800,0,100,100);
-        SetSpeed_Panel.add(SetSpeed_Label);
-        SetSpeed_Panel.add(SetSpeed_Value);
-        SetSpeed_Panel.setVisible(true);
-        points_Panel.add(SetSpeed_Panel);
-        
+        button_Panel.add(SetSpeed_Label);
+        button_Panel.add(SetSpeed_TextField);
+   
         points_Panel.add(button_Panel,BorderLayout.SOUTH);
         
         singleRead_Button.setEnabled(false);
@@ -98,7 +90,7 @@ public class SwingErrorPanel extends MyPanel{
         this.add(Swing_Error_Parameter);
         
         String[] columnNames = {"点位","指令坐标X","指令坐标Y","指令坐标Z","实际坐标X","实际坐标Y","实际坐标Z"};
-        Object[][] modelData = new Object[24][7];
+        Object[][] modelData = new Object[20][7];
         for(int i = 0;i < modelData.length;++i) {
             for(int j = 0;j < modelData[0].length;++j) {
                 if(j == 0) {
@@ -400,7 +392,7 @@ public class SwingErrorPanel extends MyPanel{
     
     public void SetValueAll(final Object[][] values) {
         DecimalFormat df = new DecimalFormat("0.000"); //设置数据显示格式为X.XXXX
-        for(int i = 0;i < 24;++i) {
+        for(int i = 0;i < 20;++i) {
             for(int j = 1;j < 7;++j) {
                 double v = Double.parseDouble(values[i][j-1].toString());
                 points_Table.setValueAt(df.format(v), i, j);
@@ -431,6 +423,11 @@ public class SwingErrorPanel extends MyPanel{
         return value;
     }
     
+    public double GetSpeedValue(){
+        Speed_Value = Double.parseDouble(SetSpeed_TextField.getText());
+        return Speed_Value;
+    }
+    
     public void Repeat_Data_WS(double diff) {
         DecimalFormat df = new DecimalFormat("0.000");
         WS_Value.setText(df.format(diff));
@@ -447,30 +444,6 @@ public class SwingErrorPanel extends MyPanel{
         breakAuto_Button.setEnabled(true);
     }
     
-    private void SetSpeed_ButtonActionPerformed(ActionEvent ae) {
-        if(trackerThread == null) {
-            trackerThread = MyTracker.getTrackerThread();
-        }
-        
-      
-        
-        /*
-        JDialog SetSpeed_Dialog = new JDialog();
-        
-        SetSpeed_Dialog.setTitle("指令摆动速度设置");
-        SetSpeed_Dialog.setLayout(null);
-        SetSpeed_Dialog.setBounds(710, 190, 500, 500);
-        SetSpeed_Dialog.setModal(true);
-        SetSpeed_Dialog.setVisible(true);
-        SetSpeed_Dialog.setEnabled(true);
-        SetSpeed_Dialog.setResizable(false);
-        
-        this.add(SetSpeed_Dialog);
-        */
-        
-        
-        
-    }
     
     private void singleRead_ButtonActionPerformed(ActionEvent ae) {
         if(trackerThread == null) {
@@ -503,6 +476,7 @@ public class SwingErrorPanel extends MyPanel{
             JOptionPane.showMessageDialog(this, "请先进行自动标定或点击手动计算完成标定！");
             return;
         }
+
         trackerThread.ProcessChanged(CURRENTPROCESS.SWINGERROR_PAGE_CONTINUE_PROCESS);
         trackerThread.StartCalibration();
     }
@@ -530,9 +504,10 @@ public class SwingErrorPanel extends MyPanel{
 
     private JScrollPane result_ScrollPane; 
     
-    private DigitalMeter SetSpeed_TextField;
+    public JTextField SetSpeed_TextField;
     private JLabel SetSpeed_Label;
-    private JLabel SetSpeed_Value;
+    private double Speed_Value;
+
     
     private JLabel WS_Label;
     private JLabel WS_Value;
