@@ -16,7 +16,7 @@ import javax.swing.table.TableColumn;
 
 /**
  *
- * @author szhc
+ * @author xss
  */
 public class SwingErrorPanel extends MyPanel{
     public SwingErrorPanel() {
