@@ -3,15 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/G:/FAROTracker/src/MyTracker/CoordTransform.java</file>
-            <file>file:/G:/FAROTracker/src/MyTracker/SwingErrorPanel.java</file>
-            <file>file:/G:/FAROTracker/src/MyTracker/GlobalData.java</file>
-            <file>file:/G:/FAROTracker/src/MyTracker/PosePanel.java</file>
-            <file>file:/G:/FAROTracker/src/MyTracker/CheckPanel.java</file>
-            <file>file:/G:/FAROTracker/src/MyTracker/MyTracker.java</file>
-            <file>file:/G:/FAROTracker/src/MyTracker/TrackerThread.java</file>
-            <file>file:/G:/FAROTracker/src/MyTracker/MyPanel.java</file>
-            <file>file:/G:/FAROTracker/src/MyTracker/CoordinatePaint.java</file>
+            <file>file:/G:/Learn_Git/FAROTracker/src/MyTracker/SwingErrorPanel.java</file>
+            <file>file:/G:/Learn_Git/FAROTracker/src/MyTracker/CoordTransform.java</file>
+            <file>file:/G:/Learn_Git/FAROTracker/src/MyTracker/TrackerThread.java</file>
+            <file>file:/G:/Learn_Git/FAROTracker/src/MyTracker/CheckPanel.java</file>
         </group>
     </open-files>
 </project-private>
