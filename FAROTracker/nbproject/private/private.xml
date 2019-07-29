@@ -4,10 +4,12 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/G:/Learn_Git/FAROTracker/src/MyTracker/SwingErrorPanel.java</file>
+            <file>file:/G:/Learn_Git/FAROTracker/src/MyTracker/ChangeDialog.java</file>
             <file>file:/G:/Learn_Git/FAROTracker/src/MyTracker/MyTracker.java</file>
-            <file>file:/G:/Learn_Git/FAROTracker/src/MyTracker/DigitalMeter.java</file>
             <file>file:/G:/Learn_Git/FAROTracker/src/MyTracker/TrackerThread.java</file>
+            <file>file:/G:/Learn_Git/FAROTracker/src/MyTracker/PosePanel.java</file>
             <file>file:/G:/Learn_Git/FAROTracker/src/MyTracker/CheckPanel.java</file>
+            <file>file:/G:/Learn_Git/FAROTracker/src/MyTracker/SE_ChangeDialog.java</file>
         </group>
     </open-files>
 </project-private>

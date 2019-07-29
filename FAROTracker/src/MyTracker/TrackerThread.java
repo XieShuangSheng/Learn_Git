@@ -91,8 +91,8 @@ public class TrackerThread implements Runnable {
     private boolean moving = false;
     private boolean auto2manual = false;
     private double[][] repeatDiff = new double[150][3];//位姿测试数据存储
-    private double[][] repeatSE = new double [72][3];//摆动偏差测试数据存储
-    private double[][] Result_DataSE = new double [8][3];//摆动偏差测试结果数据存储
+    private double[][] repeatSE = new double [60][3];//摆动偏差测试数据存储
+    private double[][] Result_DataSE = new double [3][9];//摆动偏差测试结果数据存储
     private int stopJudgement = 0; //运动停止判别
     private double[] rotation = new double[5]; //轨迹点位显示变换
     private double[] base = new double[16]; //坐标变换
@@ -114,6 +114,7 @@ public class TrackerThread implements Runnable {
         this.posePanel = frame.getPosePanel();
         this.posePanelScara = frame.getPosePanelScara();
         this.trajPanel = frame.getTrajPanel();
+        this.swingerrorPanel = frame.getSwingErrorPanel();
         cal = new Calibration();
         register = new Register(cal);
     }
@@ -458,26 +459,9 @@ public class TrackerThread implements Runnable {
     private void ClearCurrEvent() {
         currentEvent = CURRENTEVENT.NONE_EVENT;
     }
-    private void SwingError_Test(){
-        Object[] number = new Object[3];
-        number[0] = 11.111;
-        number[1] = 22.222;
-        number[2] = 33.333;
-        
-        if(frame.GetTypeSel() == TYPESEL.SIXDOF_ROBOT) {
-            if(GetCurrProcess() == CURRENTPROCESS.SWINGERROR_PAGE_SINGLEREAD_PROCESS) {
-                swingerrorPanel.SetTrackerValue(number);
-                currPoint = swingerrorPanel.GetSelectionRow();//获取当前行数
-                if(currPoint < 23) {
-                    currPoint = swingerrorPanel.GetSelectionRow() + 1;//行数加一
-                }
-                swingerrorPanel.SetSelectionRow(currPoint);
-            }
-        }
-    }
     private void SingleMeasurement() {
         int nEventRate=1;
-        MeasurePointData mData = null;
+        MeasurePointData mData;
         try{
             if(tracker.connected() == false) {
                 frame.SetAlarmString("请先连接激光跟踪仪!");
@@ -556,17 +540,20 @@ public class TrackerThread implements Runnable {
             if(GetCurrProcess() == CURRENTPROCESS.POSE_PAGE_SINGLEREAD_PROCESS) {
                 posePanel.SetTrackerValue(values);
                 currPoint = posePanel.GetSelectionRow();
-                if(currPoint < 49) {
+                if(currPoint < 4) {
                     currPoint = posePanel.GetSelectionRow() + 1;
                 }
                 posePanel.SetSelectionRow(currPoint);
             }
             if(GetCurrProcess() == CURRENTPROCESS.SWINGERROR_PAGE_SINGLEREAD_PROCESS) {
-                swingerrorPanel.SetTrackerValue(values);
+                if(swingerrorPanel != null) {
+                    swingerrorPanel.SetTrackerValue(values);
+                }
                 currPoint = swingerrorPanel.GetSelectionRow();
-                if(currPoint < 23) {
+                if(currPoint < 19) {
                     currPoint = swingerrorPanel.GetSelectionRow() + 1;
                 }
+                System.out.println("currPoint:" + currPoint);
                 swingerrorPanel.SetSelectionRow(currPoint);
             }
             if(GetCurrProcess() == CURRENTPROCESS.COORDTRANS_SINGLEREAD_PROCESS) {
@@ -903,8 +890,8 @@ public class TrackerThread implements Runnable {
                             
                             //指令摆幅Sc
                             double Sc = 0.0;
-                            double[] Previous_distance = new double[10];
-                            double[] Next_distance = new double[10];
+                            double[] Previous_distance = new double[21];
+                            double[] Next_distance = new double[21];
                             double[] diff_distance = new double[30];
                             double[] dist_ave = new double[3];
                             int row = swingerrorPanel.GetPointsTableRow();
@@ -912,17 +899,26 @@ public class TrackerThread implements Runnable {
                             System.out.println("row:" + row);
                             System.out.println("column:" + column);
                             double[][] directive;
-                            directive = swingerrorPanel.GetTableValue();
+                            directive = swingerrorPanel.GetTableValue();    
                             for(int i = 0; i < 3; i++){
                                 int k = 0;
                                 for(int j = 0; j < row; j++){
                                     if(j % 2 == 0){
+
                                         Previous_distance[k] = Math.sqrt(Math.pow(directive[j][0],2) + Math.pow(directive[j][2],2));
-                                        ++k;
+                                        if(k < 30){
+                                             ++k;  
+                                        }
+                                        System.out.println("Previous_distance_k:" + k);
+                                        
+
                                     }
                                     if(j % 2 !=0){
                                         Next_distance[k] = Math.sqrt(Math.pow(directive[j][0],2) + Math.pow(directive[j][2],2));
-                                        ++k;
+                                        if(k < 30){
+                                             ++k;  
+                                        }
+                                        System.out.println("Next_distance_k:" + k);
                                     }                   
                                 }
                                 for(int h = 0; h < 10; h++){
@@ -931,26 +927,28 @@ public class TrackerThread implements Runnable {
                                 }
                                 dist_ave[i] /= 10;
                                 Sc += dist_ave[i];
-                                Result_DataSE[0][i] = dist_ave[i];
+                                Result_DataSE[i][0] = dist_ave[i];
                             }
                             Sc /= 3;
                             
                              //测到的摆幅平均值Sa
                             double Sa = 0.0;
-                            double[] Front_distance = new double[10];
-                            double[] After_distance = new double[10];
+                            double[] Front_distance = new double[21];
+                            double[] After_distance = new double[21];
                             double[] distance_diff = new double[30];
                             double[] ave_dist = new double[3];
                             for(int i = 0; i < 3; i++){
-                                int k = 0;
-                                for(int j = 0; j < 20; j++){
+                                int g = 0;
+                                for(int j = 0; j < row; j++){
                                     if(j % 2 == 0){
-                                        Front_distance[k] = Math.sqrt(Math.pow(repeatSE[j][0], 2) + Math.pow(repeatSE[j][2],2));
-                                        ++k;
+                                        Front_distance[g] = Math.sqrt(Math.pow(repeatSE[j][0], 2) + Math.pow(repeatSE[j][2],2));
+                                        ++g;
+                                        System.out.println("Front_distance_g:" + g);
                                     }
                                     if(j % 2 !=0){
-                                        After_distance[k] = Math.sqrt(Math.pow(repeatSE[j][0], 2) + Math.pow(repeatSE[j][2],2));
-                                        ++k;
+                                        After_distance[g] = Math.sqrt(Math.pow(repeatSE[j][0], 2) + Math.pow(repeatSE[j][2],2));
+                                        ++g;
+                                        System.out.println("After_distance_g:" + g);
                                     }                   
                                 }
                                 for(int h = 0; h < 10; h++){
@@ -959,11 +957,11 @@ public class TrackerThread implements Runnable {
                                 }
                                 ave_dist[i] /= 10;
                                 Sa += ave_dist[i];
-                                Result_DataSE[1][i] = ave_dist[i];
+                                Result_DataSE[i][1] = ave_dist[i];
                             }
                             Sa /= 3;
 
-                            data_WS = (Sa - Sc) / Sc * 100;
+                            data_WS = (Sa - Sc) / Sc * 100;   
                             swingerrorPanel.Repeat_Data_WS(data_WS);
                             
                             
@@ -972,17 +970,17 @@ public class TrackerThread implements Runnable {
                             //WVc = 指令摆动速度
                             double speed_WVc = swingerrorPanel.GetSpeedValue();  
                             for(int i = 0; i < 3; i++){
-                                Result_DataSE[2][i] = speed_WVc;
+                                Result_DataSE[i][2] = speed_WVc;
                             }
                             //WDc = 指令摆动距离
                             double[][] data_WDc = new double[2][3];
                             double distance_WDc; 
 
                             data_WDc[0][1] = 0 - directive[0][1]; 
-                            data_WDc[1][1] = 0 - directive[23][1]; 
+                            data_WDc[1][1] = 0 - directive[19][1]; 
                             distance_WDc = Math.sqrt(Math.pow(data_WDc[0][1] - data_WDc[1][1], 2));     
                             for(int i = 0; i < 3; i++){
-                                Result_DataSE[4][i] =  distance_WDc;
+                                Result_DataSE[i][4] =  distance_WDc;
                             }
                             //WDa = 平均的实际摆动距离
                             double[][] data_WDa = new double[6][3];
@@ -991,31 +989,33 @@ public class TrackerThread implements Runnable {
                                 data_WDa[i][1] = 0 - repeatSE[i][1];
                                 data_WDa[i+3][1] = 0 - repeatSE[i*20+19][1]; 
                                 distance_WDa += Math.sqrt(Math.pow(data_WDa[i][1] - data_WDa[i+3][1], 2)); 
-                                Result_DataSE[5][i] = Math.sqrt(Math.pow(data_WDa[i][1] - data_WDa[i+3][1], 2)); 
+                                Result_DataSE[i][5] = Math.sqrt(Math.pow(data_WDa[i][1] - data_WDa[i+3][1], 2)); 
                             }
                             distance_WDa /= 3; 
                             //WVa = 实际摆动速度   
                             double speed_WVa = 0.0;
                             for(int i = 0; i < 3; i++){
-                                Result_DataSE[3][i] = Result_DataSE[5][i] / TotalTime[i] / 1000;
-                                speed_WVa += Result_DataSE[3][i];
+                                Result_DataSE[i][3] = Result_DataSE[i][5] / TotalTime[i] / 1000;
+                                speed_WVa += Result_DataSE[i][3];
                             }
                             speed_WVa /= 3;
                             //Fc = 10 * [WVc / (10 -  WDc)]
                             double Fc = 10 * (speed_WVc / (10 -  distance_WDc));
                             for(int i = 0; i < 3; i++){
-                                Result_DataSE[6][i] = Fc;
+                                Result_DataSE[i][6] = Fc;
                             }
                             //Fa = 10 * [WVa / (10 -  WDa)]
                             double Fa = 10 * (speed_WVa / (10 -  distance_WDa));
                             for(int i = 0; i < 3; i++){
-                                Result_DataSE[7][i] = Fa;       
+                                Result_DataSE[i][7] = Fa;       
                             }
 
                             
                             data_WF = (Fa - Fc) / Fc * 100;
                             swingerrorPanel.Repeat_Data_WF(data_WF);
+                            System.out.println("输出检测结果");
                             swingerrorPanel.SetResultTableValue(Result_DataSE);
+                            System.out.println("输出检测结果完毕");
                             
                             return 1;
                         }
@@ -1306,7 +1306,7 @@ public class TrackerThread implements Runnable {
                 catch(TrackerException e) {
                     System.out.println(e);
                 }
-                SetCurrEvent(CURRENTEVENT.STARTCALIBRATE_POSE_EVENT);
+                SetCurrEvent(CURRENTEVENT.STARTCALIBRATE_SWINGERROR_EVENT);
                 break;
             case TRAJECTORY_PAGE_CONTINUE_PROCESS:
                 try {

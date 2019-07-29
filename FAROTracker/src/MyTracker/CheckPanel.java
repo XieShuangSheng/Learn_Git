@@ -884,6 +884,8 @@ public class CheckPanel extends MyPanel{
     public Object[][] GetTableValue(){
         int rowCnt = main_Table.getRowCount();
         int columnCnt = main_Table.getColumnCount();
+        System.out.println("rowCnt:" + rowCnt);
+        System.out.println("columnCnt:" + columnCnt);
         Object[][] value = new Object[rowCnt][columnCnt];
         for(int i = 0; i < rowCnt;++i) {
             for(int j = 1;j < columnCnt;++j) {

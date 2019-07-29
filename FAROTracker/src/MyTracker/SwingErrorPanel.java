@@ -103,7 +103,7 @@ public class SwingErrorPanel extends MyPanel{
         }
         points_Table = new JTable(modelData,columnNames);
         points_Panel.add(points_Table);
-                DefaultTableModel tableModel = new DefaultTableModel(modelData.length,modelData[0].length) {
+        DefaultTableModel tableModel = new DefaultTableModel(modelData.length,modelData[0].length) {
             // 以下为继承自AbstractTableModle的方法，可以自定义 
             //设置列是否可以编辑
             @Override
@@ -256,6 +256,8 @@ public class SwingErrorPanel extends MyPanel{
         };
         result_Table.setModel(result_tableModel);
         
+        chgDialog = new SE_ChangeDialog(this);
+        
         //手动读取
         singleRead_Button.addActionListener(new ActionListener() {
             @Override
@@ -347,44 +349,51 @@ public class SwingErrorPanel extends MyPanel{
 
         result_Panel.add(SwingError_Panel);
     }
-    
+    //滚动条跟随表中选择的行自动滚动
     public void SetSelectionRow(int row) {
-        int width = scrollPane.getViewport().getHeight();
-        Point p = scrollPane.getViewport().getViewPosition();
+        System.out.println("555555555");
+        int width = points_ScrollPane.getViewport().getHeight();
+        Point p = points_ScrollPane.getViewport().getViewPosition();
         JTableHeader header = points_Table.getTableHeader();
         int rowWidth = header.getHeight() + points_Table.getRowHeight() * row;
-        
+        System.out.println("66666666");
         if(rowWidth > width) {
             p.setLocation(p.getX(), points_Table.getRowHeight() * (row + 2) - width);
         }
         else {
             p.setLocation(p.getX(),0);
         }
-        scrollPane.getViewport().setViewPosition(p);
+        System.out.println("7777777777777");
+        points_ScrollPane.getViewport().setViewPosition(p);
         points_Table.setRowSelectionInterval(row, row);
     }
     
       
     public void SetTrackerValue(final Object[] values) {
         int row = points_Table.getSelectedRow();
+        System.out.println("row:" + row);
         DecimalFormat df = new DecimalFormat("0.000"); //设置数据显示格式为X.XXXX
         if(points_Table.isRowSelected(row)) {
-            for(int i = 7;i < 10;++i) {
-                double v = Double.parseDouble(values[i-7].toString());
+            System.out.println("88888888888");
+            for(int i = 4;i < 7;++i) {
+                double v = Double.parseDouble(values[i-4].toString());
                 points_Table.setValueAt(df.format(v),row,i);
             }
         }
     }  
     
     public void SetResultTableValue(final double[][] values) {
-        int row = result_Table.getSelectedRow();
-        int column = result_Table.getSelectedColumn();
+        int row = result_Table.getRowCount();
+        System.out.println("row:" + row);
+        int column = result_Table.getColumnCount();
+        System.out.println("column:" + column);
         DecimalFormat df = new DecimalFormat("0.000"); //设置数据显示格式为X.XXXX
-        if(result_Table.isRowSelected(row)) {
+        //if(result_Table.isRowSelected(row)) {
+        if(true) {
             for(int i = 0;i < row;++i) {
-                for(int j = 0; j < column; j++){
+                for(int j = 0; j < column - 1; j++){
                     double v = values[i][j];
-                    result_Table.setValueAt(df.format(v),i+1,j);
+                    result_Table.setValueAt(df.format(v),i,j+1);
                 }
             }
         }
@@ -414,13 +423,17 @@ public class SwingErrorPanel extends MyPanel{
     public double[][] GetTableValue(){
         int rowCnt = points_Table.getRowCount();
         int columnCnt = points_Table.getColumnCount();
-        double[][] value = new double[rowCnt][columnCnt];
+        System.out.println("rowCnt:" + rowCnt);
+        System.out.println("columnCnt:" + columnCnt);
+        Object[][] value = new Object[rowCnt][columnCnt -1];
+        double[][] number = new double[rowCnt][columnCnt -1];
         for(int i = 0; i < rowCnt;++i) {
             for(int j = 1;j < columnCnt;++j) {
-                value[i][j-1] = (double) points_Table.getModel().getValueAt(i, j);
+                value[i][j-1] = points_Table.getModel().getValueAt(i, j);
+                number[i][j-1] = Double.parseDouble(value[i][j-1].toString());
             }
         }
-        return value;
+        return number;
     }
     
     public double GetSpeedValue(){
@@ -472,11 +485,12 @@ public class SwingErrorPanel extends MyPanel{
             JOptionPane.showMessageDialog(this, "测量进行中，请稍后重试！");
             return;
         }
+        /*
         if(trackerThread.GetCoordTransformFlag() == false) {
             JOptionPane.showMessageDialog(this, "请先进行自动标定或点击手动计算完成标定！");
             return;
         }
-
+        */
         trackerThread.ProcessChanged(CURRENTPROCESS.SWINGERROR_PAGE_CONTINUE_PROCESS);
         trackerThread.StartCalibration();
     }
@@ -489,10 +503,10 @@ public class SwingErrorPanel extends MyPanel{
     
     
     
-    private JScrollPane scrollPane;
+
     
     private TrackerThread trackerThread;
-    private ChangeDialog chgDialog;
+    private SE_ChangeDialog chgDialog;
     
     private JPanel points_Panel;
     private JPanel button_Panel;

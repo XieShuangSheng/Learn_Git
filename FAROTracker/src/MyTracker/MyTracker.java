@@ -1474,6 +1474,11 @@ public class MyTracker extends javax.swing.JFrame
     public TrajectoryPanel getTrajPanel() {
         return trajectoryPanel;
     }
+    
+    public SwingErrorPanel getSwingErrorPanel() {
+        return swingErrorPanel;
+    }
+    
     public static TrackerThread getTrackerThread() {
         return trackerThread;
     }
