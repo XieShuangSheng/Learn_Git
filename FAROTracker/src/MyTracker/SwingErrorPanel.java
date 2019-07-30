@@ -30,13 +30,22 @@ public class SwingErrorPanel extends MyPanel{
         sketch1_Panel = new JPanel();
         Swing_Error_Parameter = new JPanel();
         
+        Loops_Label = new JLabel("循环次数");
+        Loops_Value = new JLabel("1");
+        Loops_Value.setBorder(BorderFactory.createEtchedBorder());
+        Loops_Value.setPreferredSize(new Dimension(25,25));
+        //LoopsValue_TextField.setEditable(false);
+        //LoopsValue_TextField.setBackground(Color.lightGray);
+        
         singleRead_Button = new JButton("手动读取");
-        change_Button = new JButton("修改坐标");
+        count_Button = new JButton("手动计算");
         autoRead_Button = new JButton("启动检测");
         breakAuto_Button = new JButton("终止检测");
         
         SetSpeed_Label = new JLabel("指令速度");
-        SetSpeed_TextField = new JTextField("20.0",8);
+        SetSpeed_TextField = new JTextField("20.0",4);
+        SetSpeed_TextField.setEditable(true);
+        SetSpeed_TextField.setBackground(Color.white);
         //SetSpeed_TextField .setBorder(BorderFactory.createEtchedBorder());
         //SetSpeed_TextField .setPreferredSize(new Dimension(100,30));
         
@@ -61,9 +70,10 @@ public class SwingErrorPanel extends MyPanel{
         
         points_Panel.setLayout(new BorderLayout());
 
-       
+        button_Panel.add(Loops_Label);
+        button_Panel.add( Loops_Value);
         button_Panel.add(singleRead_Button);
-        button_Panel.add(change_Button);
+        button_Panel.add(count_Button);
         button_Panel.add(autoRead_Button);
         button_Panel.add(breakAuto_Button);
         button_Panel.add(SetSpeed_Label);
@@ -72,7 +82,7 @@ public class SwingErrorPanel extends MyPanel{
         points_Panel.add(button_Panel,BorderLayout.SOUTH);
         
         singleRead_Button.setEnabled(false);
-        change_Button.setEnabled(false);
+        count_Button.setEnabled(false);
         autoRead_Button.setEnabled(false);
         breakAuto_Button.setEnabled(false);
         
@@ -196,8 +206,8 @@ public class SwingErrorPanel extends MyPanel{
         points_Panel.add(points_ScrollPane);
         
         
-        String[] result_columnNames = {"循环次数","指令摆幅Sc","实际摆幅Sa","指令摆动速度WVc",
-            "实际摆动速度WVa","指令摆动距离WDc","实际摆动距离WDa","指令摆频Fc","实际摆频Fa"};
+        String[] result_columnNames = {"循环次数","指令摆幅Sc","实际摆幅Sa","指令摆动距离WDc","实际摆动距离WDa","指令摆动速度WVc",
+                 "实际摆动速度WVa","指令摆频Fc","实际摆频Fa"};
         Object[][] result_modelData = new Object[3][9];
         for(int i = 0;i < result_modelData.length;++i) {
             for(int j = 0;j < result_modelData[0].length;++j) {
@@ -255,9 +265,7 @@ public class SwingErrorPanel extends MyPanel{
             }
         };
         result_Table.setModel(result_tableModel);
-        
-        chgDialog = new SE_ChangeDialog(this);
-        
+     
         //手动读取
         singleRead_Button.addActionListener(new ActionListener() {
             @Override
@@ -265,11 +273,11 @@ public class SwingErrorPanel extends MyPanel{
                 singleRead_ButtonActionPerformed(ae);
             }
         });
-        //修改坐标
-        change_Button.addActionListener(new ActionListener() {
+        //手动计算
+        count_Button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                change_ButtonActionPerformed(ae);
+                count_ButtonActionPerformed(ae);
             }
         });
         //启动检测
@@ -351,19 +359,16 @@ public class SwingErrorPanel extends MyPanel{
     }
     //滚动条跟随表中选择的行自动滚动
     public void SetSelectionRow(int row) {
-        System.out.println("555555555");
         int width = points_ScrollPane.getViewport().getHeight();
         Point p = points_ScrollPane.getViewport().getViewPosition();
         JTableHeader header = points_Table.getTableHeader();
         int rowWidth = header.getHeight() + points_Table.getRowHeight() * row;
-        System.out.println("66666666");
         if(rowWidth > width) {
             p.setLocation(p.getX(), points_Table.getRowHeight() * (row + 2) - width);
         }
         else {
             p.setLocation(p.getX(),0);
         }
-        System.out.println("7777777777777");
         points_ScrollPane.getViewport().setViewPosition(p);
         points_Table.setRowSelectionInterval(row, row);
     }
@@ -373,8 +378,7 @@ public class SwingErrorPanel extends MyPanel{
         int row = points_Table.getSelectedRow();
         System.out.println("row:" + row);
         DecimalFormat df = new DecimalFormat("0.000"); //设置数据显示格式为X.XXXX
-        if(points_Table.isRowSelected(row)) {
-            System.out.println("88888888888");
+        if(points_Table.isRowSelected(row)) { 
             for(int i = 4;i < 7;++i) {
                 double v = Double.parseDouble(values[i-4].toString());
                 points_Table.setValueAt(df.format(v),row,i);
@@ -440,6 +444,10 @@ public class SwingErrorPanel extends MyPanel{
         Speed_Value = Double.parseDouble(SetSpeed_TextField.getText());
         return Speed_Value;
     }
+    public void Repeat_Data_Loops(double diff) {
+        DecimalFormat df = new DecimalFormat("0");
+        Loops_Value.setText(df.format(diff));
+    }
     
     public void Repeat_Data_WS(double diff) {
         DecimalFormat df = new DecimalFormat("0.000");
@@ -452,7 +460,7 @@ public class SwingErrorPanel extends MyPanel{
     
     public void ProcessEnable() {
         singleRead_Button.setEnabled(true);
-        change_Button.setEnabled(true);        
+        count_Button.setEnabled(true);        
         autoRead_Button.setEnabled(true);
         breakAuto_Button.setEnabled(true);
     }
@@ -466,22 +474,29 @@ public class SwingErrorPanel extends MyPanel{
             JOptionPane.showMessageDialog(this, "测量进行中，请稍后重试！");
             return;
         }
+        SetSpeed_TextField.setEditable(false);
+        SetSpeed_TextField.setBackground(Color.lightGray);
         trackerThread.ProcessChanged(CURRENTPROCESS.SWINGERROR_PAGE_SINGLEREAD_PROCESS);
         trackerThread.SingleReadMeasure();
     }
     
-    private void change_ButtonActionPerformed(ActionEvent ae) {
-        int row = points_Table.getSelectedRow();
-        if(points_Table.isRowSelected(row)) {
-            chgDialog.setVisible(true);
+    private void count_ButtonActionPerformed(ActionEvent ae) {
+        if(trackerThread == null) {
+            trackerThread = MyTracker.getTrackerThread();
         }
+        if(trackerThread.GetCurrProcess() != CURRENTPROCESS.NONE_PROCESS) {
+            JOptionPane.showMessageDialog(this, "测量进行中，请稍后重试！");
+            return;
+        }
+        //trackerThread.StartCalibrationAlone();
     }
     
     private void autoRead_ButtonActionPerformed(ActionEvent ae) {
         if(trackerThread == null) {
             trackerThread = MyTracker.getTrackerThread();
         }
-        if(trackerThread.GetCurrProcess() != CURRENTPROCESS.NONE_PROCESS) {
+        if(trackerThread.GetCurrProcess() != CURRENTPROCESS.NONE_PROCESS 
+                && trackerThread.GetCurrProcess() != CURRENTPROCESS.SWINGERROR_PAGE_BREAK_AUTO_PROCESS) {
             JOptionPane.showMessageDialog(this, "测量进行中，请稍后重试！");
             return;
         }
@@ -491,22 +506,29 @@ public class SwingErrorPanel extends MyPanel{
             return;
         }
         */
+        System.out.println("111111111111111111");
+        SetSpeed_TextField.setEditable(false);
+        SetSpeed_TextField.setBackground(Color.lightGray);
         trackerThread.ProcessChanged(CURRENTPROCESS.SWINGERROR_PAGE_CONTINUE_PROCESS);
         trackerThread.StartCalibration();
+        System.out.println("222222222222222");
     }
     
     private void breakAuto_ButtonActionPerformed(ActionEvent ae) {
+        if(trackerThread == null) {
+            trackerThread = MyTracker.getTrackerThread();
+        }
         trackerThread.ProcessChanged(CURRENTPROCESS.SWINGERROR_PAGE_BREAK_AUTO_PROCESS);
+        trackerThread.frame.SetCmdSeqString("终止检测中···");
+
     }
     
 
     
     
-    
-
+  
     
     private TrackerThread trackerThread;
-    private SE_ChangeDialog chgDialog;
     
     private JPanel points_Panel;
     private JPanel button_Panel;
@@ -522,16 +544,16 @@ public class SwingErrorPanel extends MyPanel{
     private JLabel SetSpeed_Label;
     private double Speed_Value;
 
+    private JLabel Loops_Label;
+    private JLabel Loops_Value;
     
     private JLabel WS_Label;
     private JLabel WS_Value;
     private JLabel WF_Label;
     private JLabel WF_Value;
-
-    
    
     private JButton singleRead_Button;
-    private JButton change_Button;
+    private JButton count_Button;
     private JButton autoRead_Button;
     private JButton breakAuto_Button;
 
