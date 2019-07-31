@@ -399,6 +399,8 @@ public class TrackerThread implements Runnable {
                 case STARTCALIBRATE_SWINGERROR_EVENT:
                     ClearCurrEvent(); 
                     frame.SetCmdSeqString("摆动偏差检测完成");
+                    swingerrorPanel.DwellTime_TextField.setEditable(true);
+                    swingerrorPanel.DwellTime_TextField.setBackground(Color.white);
                     swingerrorPanel.SetSpeed_TextField.setEditable(true);
                     swingerrorPanel.SetSpeed_TextField.setBackground(Color.white);
                     ProcessChanged(CURRENTPROCESS.NONE_PROCESS);
@@ -564,7 +566,7 @@ public class TrackerThread implements Runnable {
                         swingerrorPanel.Repeat_Data_Loops(++number);
                     }
                 }
-                System.out.println("currPoint:" + currPoint);   
+                System.out.println("singleread_currPoint:" + currPoint);   
             }
             if(GetCurrProcess() == CURRENTPROCESS.COORDTRANS_SINGLEREAD_PROCESS) {
                 coordTransPanel.SetTrackerValue(values);
@@ -773,9 +775,12 @@ public class TrackerThread implements Runnable {
                 }
                 if(moving == true) {
                     Object[] values = new Object[3];
-                    values[0] = dataBuf[dataBuf.length-1][0];//average_X;                                           ???????
+                    values[0] = dataBuf[dataBuf.length-1][0];//average_X;                                          
                     values[1] = dataBuf[dataBuf.length-1][1];//average_Y;                                          
-                    values[2] = dataBuf[dataBuf.length-1][2];//average_Z;                                           
+                    values[2] = dataBuf[dataBuf.length-1][2];//average_Z;
+                    if(currPoint == 1 && GetCurrProcess() == CURRENTPROCESS.SWINGERROR_PAGE_CONTINUE_PROCESS){
+                            startTime = System.currentTimeMillis();
+                        }
                     ++currPoint;
                     if(GetCurrProcess() == CURRENTPROCESS.CHECK_PAGE_CONTINUE_PROCESS) {
                         checkPanel.SetTrackerValue(values);
@@ -875,6 +880,7 @@ public class TrackerThread implements Runnable {
                     //摆动偏差检测处理
                     if(GetCurrProcess() == CURRENTPROCESS.SWINGERROR_PAGE_CONTINUE_PROCESS) {
                         swingerrorPanel.SetTrackerValue(values);
+                        System.out.println("currPoint:" + currPoint);
                         if(currPoint == 1){
                             startTime = System.currentTimeMillis();
                         }
@@ -1008,8 +1014,9 @@ public class TrackerThread implements Runnable {
                             }
                             //WVa = 实际摆动速度   
                             double speed_WVa = 0.0;
+                            double DwellTime = swingerrorPanel.GetDwellTimeValue(); 
                             for(int i = 0; i < 3; i++){
-                                Result_DataSE[i][5] = Result_DataSE[i][3] / TotalTime[i] / 1000;
+                                Result_DataSE[i][5] = Result_DataSE[i][3] / (TotalTime[i] - 19 * DwellTime) * 1000;
                                 speed_WVa += Result_DataSE[i][5];
                                 System.out.println("实际摆动时间TotalTime[i]：" + TotalTime[i]);
                                 System.out.println("实际摆动速度Result_DataSE[i][5]:" + Result_DataSE[i][5]);
@@ -1017,22 +1024,22 @@ public class TrackerThread implements Runnable {
                             speed_WVa /= 3;
                             System.out.println("speed_WVa:" + speed_WVa);
                             //Fc = 10 * [WVc / (10 -  WDc)]
-                            double Fc = 10 * (speed_WVc / (10 -  distance_WDc));
+                            double Fc = 0.0;
                             for(int i = 0; i < 3; i++){
-                                Result_DataSE[i][6] = Fc;
+                                Result_DataSE[i][6] = 10 * (Result_DataSE[i][4] / (10 -  Result_DataSE[i][2]));
+                                Fc += Result_DataSE[i][6];
                             }
+                            Fc /= 3;
                             //Fa = 10 * [WVa / (10 -  WDa)]
-                            double Fa = 10 * (speed_WVa / (10 -  distance_WDa));
+                            double Fa = 0.0;
                             for(int i = 0; i < 3; i++){
-                                Result_DataSE[i][7] = Fa;       
+                                Result_DataSE[i][7] = 10 * (Result_DataSE[i][5] / (10 -  Result_DataSE[i][3]));  
+                                Fa += Result_DataSE[i][7];
                             }
-                            
-                            
+                            Fa /= 3;            
                             data_WF = (Fa - Fc) / Fc * 100;
                             swingerrorPanel.Repeat_Data_WF(data_WF);
-                            System.out.println("输出检测结果");
                             swingerrorPanel.SetResultTableValue(Result_DataSE);
-                            System.out.println("输出检测结果完毕");
                             
                             return 1;
                         }

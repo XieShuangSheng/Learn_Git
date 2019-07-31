@@ -38,16 +38,17 @@ public class SwingErrorPanel extends MyPanel{
         //LoopsValue_TextField.setBackground(Color.lightGray);
         
         singleRead_Button = new JButton("手动读取");
-        count_Button = new JButton("手动计算");
         autoRead_Button = new JButton("启动检测");
         breakAuto_Button = new JButton("终止检测");
         
+        DwellTime_Label = new JLabel("停顿时间");
+        DwellTime_TextField = new JTextField("0",4);
+        DwellTime_TextField.setEditable(true);
+        DwellTime_TextField.setBackground(Color.white);
         SetSpeed_Label = new JLabel("指令速度");
         SetSpeed_TextField = new JTextField("20.0",4);
         SetSpeed_TextField.setEditable(true);
         SetSpeed_TextField.setBackground(Color.white);
-        //SetSpeed_TextField .setBorder(BorderFactory.createEtchedBorder());
-        //SetSpeed_TextField .setPreferredSize(new Dimension(100,30));
         
         ImageIcon SwingError_img;
         ImageIcon SwingError1_img;
@@ -73,16 +74,16 @@ public class SwingErrorPanel extends MyPanel{
         button_Panel.add(Loops_Label);
         button_Panel.add( Loops_Value);
         button_Panel.add(singleRead_Button);
-        button_Panel.add(count_Button);
         button_Panel.add(autoRead_Button);
         button_Panel.add(breakAuto_Button);
+        button_Panel.add(DwellTime_Label);
+        button_Panel.add(DwellTime_TextField);
         button_Panel.add(SetSpeed_Label);
         button_Panel.add(SetSpeed_TextField);
    
         points_Panel.add(button_Panel,BorderLayout.SOUTH);
         
         singleRead_Button.setEnabled(false);
-        count_Button.setEnabled(false);
         autoRead_Button.setEnabled(false);
         breakAuto_Button.setEnabled(false);
         
@@ -273,13 +274,6 @@ public class SwingErrorPanel extends MyPanel{
                 singleRead_ButtonActionPerformed(ae);
             }
         });
-        //手动计算
-        count_Button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                count_ButtonActionPerformed(ae);
-            }
-        });
         //启动检测
         autoRead_Button.addActionListener(new ActionListener() {
            @Override
@@ -439,7 +433,10 @@ public class SwingErrorPanel extends MyPanel{
         }
         return number;
     }
-    
+    public double GetDwellTimeValue(){
+        DwellTime_Value = Double.parseDouble( DwellTime_TextField.getText());
+        return DwellTime_Value;
+    }
     public double GetSpeedValue(){
         Speed_Value = Double.parseDouble(SetSpeed_TextField.getText());
         return Speed_Value;
@@ -459,8 +456,7 @@ public class SwingErrorPanel extends MyPanel{
     }
     
     public void ProcessEnable() {
-        singleRead_Button.setEnabled(true);
-        count_Button.setEnabled(true);        
+        singleRead_Button.setEnabled(true);       
         autoRead_Button.setEnabled(true);
         breakAuto_Button.setEnabled(true);
     }
@@ -474,6 +470,8 @@ public class SwingErrorPanel extends MyPanel{
             JOptionPane.showMessageDialog(this, "测量进行中，请稍后重试！");
             return;
         }
+        DwellTime_TextField.setEditable(false);
+        DwellTime_TextField.setBackground(Color.lightGray);
         SetSpeed_TextField.setEditable(false);
         SetSpeed_TextField.setBackground(Color.lightGray);
         trackerThread.ProcessChanged(CURRENTPROCESS.SWINGERROR_PAGE_SINGLEREAD_PROCESS);
@@ -506,12 +504,12 @@ public class SwingErrorPanel extends MyPanel{
             return;
         }
         */
-        System.out.println("111111111111111111");
+        DwellTime_TextField.setEditable(false);
+        DwellTime_TextField.setBackground(Color.lightGray);
         SetSpeed_TextField.setEditable(false);
         SetSpeed_TextField.setBackground(Color.lightGray);
         trackerThread.ProcessChanged(CURRENTPROCESS.SWINGERROR_PAGE_CONTINUE_PROCESS);
         trackerThread.StartCalibration();
-        System.out.println("222222222222222");
     }
     
     private void breakAuto_ButtonActionPerformed(ActionEvent ae) {
@@ -540,6 +538,9 @@ public class SwingErrorPanel extends MyPanel{
 
     private JScrollPane result_ScrollPane; 
     
+    public JTextField DwellTime_TextField;
+    private JLabel DwellTime_Label;
+    private double DwellTime_Value;
     public JTextField SetSpeed_TextField;
     private JLabel SetSpeed_Label;
     private double Speed_Value;
@@ -553,7 +554,6 @@ public class SwingErrorPanel extends MyPanel{
     private JLabel WF_Value;
    
     private JButton singleRead_Button;
-    private JButton count_Button;
     private JButton autoRead_Button;
     private JButton breakAuto_Button;
 
