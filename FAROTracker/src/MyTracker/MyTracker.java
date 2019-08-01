@@ -1098,7 +1098,8 @@ public class MyTracker extends javax.swing.JFrame
                     Sheet sheet_Struct = book.getSheet(3);      //结构  
                     Sheet sheet_Length = book.getSheet(4);      //长度
                     Sheet sheet_result = book.getSheet(5);      //结果
-                    Sheet sheet_swingerror = book.getSheet(6);  //偏差
+                    Sheet sheet_minTime = book.getSheet(6);     //最小定位时间
+                    Sheet sheet_swingerror = book.getSheet(7);  //摆动偏差
                     
                     
                     int rowCnt_data = sheet_data.getRows(); //坐标的行数
@@ -1148,7 +1149,19 @@ public class MyTracker extends javax.swing.JFrame
                         }
                         trajectoryPanel.SetValueAll(trajData);
                         
-                        String[][] swingerror = new String[25][6];
+                        String[][] minTimeData = new String[9][6];
+                        int rowCnt_minTime = sheet_minTime.getRows();
+                        System.out.println("rowCnt_minTime:" + rowCnt_minTime);
+                        int columnCnt_minTime = sheet_minTime.getColumns();
+                        System.out.println("columnCnt_minTime:" + columnCnt_minTime);
+                        for(int i = 1;i < rowCnt_minTime;++i) {
+                            for(int j = 0;j < columnCnt_minTime;++j) {
+                                minTimeData[i-1][j] = sheet_minTime.getCell(j,i).getContents();
+                            }
+                        }   
+                        minTimeLocalPanel.SetValueAll(minTimeData);
+                        
+                        String[][] swingerror = new String[21][6];
                         int rowCnt_swingerror = sheet_swingerror.getRows();
                         int columnCnt_swingerror = sheet_swingerror.getColumns();
                         for(int i = 1;i < rowCnt_swingerror;++i) {
@@ -1164,6 +1177,8 @@ public class MyTracker extends javax.swing.JFrame
                             posePanel.ProcessEnable();
                             trajectoryPanel.ProcessEnable();
                             swingErrorPanel.ProcessEnable();
+                            minTimeLocalPanel.ProcessEnable();
+                            
                         }
 
                         Object[] resultObj = checkPanel.GetResultParams();
@@ -1474,9 +1489,11 @@ public class MyTracker extends javax.swing.JFrame
     public TrajectoryPanel getTrajPanel() {
         return trajectoryPanel;
     }
-    
     public SwingErrorPanel getSwingErrorPanel() {
         return swingErrorPanel;
+    }
+    public MinTimeLocalPanel getMinTimeLocalPanel() {
+        return minTimeLocalPanel;
     }
     
     public static TrackerThread getTrackerThread() {

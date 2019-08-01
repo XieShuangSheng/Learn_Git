@@ -370,7 +370,7 @@ public class SwingErrorPanel extends MyPanel{
       
     public void SetTrackerValue(final Object[] values) {
         int row = points_Table.getSelectedRow();
-        System.out.println("row:" + row);
+        System.out.println("SErow:" + row);
         DecimalFormat df = new DecimalFormat("0.000"); //设置数据显示格式为X.XXXX
         if(points_Table.isRowSelected(row)) { 
             for(int i = 4;i < 7;++i) {
@@ -387,14 +387,13 @@ public class SwingErrorPanel extends MyPanel{
         System.out.println("column:" + column);
         DecimalFormat df = new DecimalFormat("0.000"); //设置数据显示格式为X.XXXX
         //if(result_Table.isRowSelected(row)) {
-        if(true) {
-            for(int i = 0;i < row;++i) {
-                for(int j = 0; j < column - 1; j++){
-                    double v = values[i][j];
-                    result_Table.setValueAt(df.format(v),i,j+1);
-                }
+        for(int i = 0;i < row;++i) {
+            for(int j = 0; j < column - 1; j++){
+                double v = values[i][j];
+                result_Table.setValueAt(df.format(v),i,j+1);
             }
         }
+        
     }
     
     public void SetValueAll(final Object[][] values) {

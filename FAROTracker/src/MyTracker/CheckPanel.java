@@ -905,6 +905,7 @@ public class CheckPanel extends MyPanel{
     }
     public void SetTrackerValue(final Object[] values) {
         int row = main_Table.getSelectedRow();
+        System.out.println("Crow:" + row);
         DecimalFormat df = new DecimalFormat("0.000"); //设置数据显示格式为X.XXXX
         if(main_Table.isRowSelected(row)) {
             for(int i = 7;i < 10;++i) {
