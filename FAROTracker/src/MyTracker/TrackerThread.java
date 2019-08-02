@@ -38,6 +38,7 @@ public class TrackerThread implements Runnable {
         STARTCALIBRATE_STEP2_EVENT,//结束标定
         STARTCALIBRATE_POSE_EVENT,//位姿检测完成
         STARTCALIBRATE_SWINGERROR_EVENT,//摆动偏差检测完成
+        STARTCALIBRATE_MINTIME_EVENT,//最小定位时间检测完成
         STARTBACKGROUND_CAL_EVENT,//开始轨迹测试
         STARTBACKGROUND_STEP1_EVENT,//
         STARTBACKGROUND_STEP2_EVENT,//结束轨迹测试
@@ -60,6 +61,9 @@ public class TrackerThread implements Runnable {
     TrajectoryPanel trajPanel;
 //    CalibrationResult calResult;
 //    private Timer timer;
+    int minTimeNum = 0;
+    long minTime[] = new long [24];
+    double minTimeTotal[] = new double [32];
     
     long startTime;
     long endTime;
@@ -350,7 +354,7 @@ public class TrackerThread implements Runnable {
                         frame.SetCmdSeqString("开始位姿检测，请稍候···");
                     }
                     if(GetCurrProcess() == CURRENTPROCESS.MINTIME_PAGE_CONTINUE_PROCESS){
-                        swingerrorPanel.SetSelectionRow(currPoint);
+                        minTimeLocalPanel.SetSelectionRow(currPoint);
                         frame.SetCmdSeqString("开始最小定位时间检测，请稍等···");
                     }
                     if(GetCurrProcess() == CURRENTPROCESS.SWINGERROR_PAGE_CONTINUE_PROCESS){
@@ -400,6 +404,13 @@ public class TrackerThread implements Runnable {
                 case STARTCALIBRATE_POSE_EVENT:
                     ClearCurrEvent();
                     frame.SetCmdSeqString("位姿检测完成");
+                    ProcessChanged(CURRENTPROCESS.NONE_PROCESS);
+                    break;
+                case STARTCALIBRATE_MINTIME_EVENT:
+                    ClearCurrEvent(); 
+                    frame.SetCmdSeqString("最小定位时间检测完成");
+                    minTimeLocalPanel.DwellTime_TextField.setEditable(true);
+                    minTimeLocalPanel.DwellTime_TextField.setBackground(Color.white);
                     ProcessChanged(CURRENTPROCESS.NONE_PROCESS);
                     break;
                 case STARTCALIBRATE_SWINGERROR_EVENT:
@@ -556,6 +567,21 @@ public class TrackerThread implements Runnable {
                 }
                 posePanel.SetSelectionRow(currPoint);
             }
+            if(GetCurrProcess() == CURRENTPROCESS.MINTIME_PAGE_SINGLEREAD_PROCESS) {
+                minTimeLocalPanel.SetTrackerValue(values);
+                currPoint = minTimeLocalPanel.GetSelectionRow();
+                if(currPoint < 7) {
+                   
+                        currPoint = minTimeLocalPanel.GetSelectionRow() + 1;
+                        minTimeLocalPanel.SetSelectionRow(currPoint);
+                }
+                else{
+                    if((number < 3)){
+                        minTimeLocalPanel.SetSelectionRow(0);
+                        minTimeLocalPanel.Repeat_Data_Loops(++number);
+                    }
+                }                
+            }
             if(GetCurrProcess() == CURRENTPROCESS.SWINGERROR_PAGE_SINGLEREAD_PROCESS) {
                 swingerrorPanel.SetTrackerValue(values);
                 currPoint = swingerrorPanel.GetSelectionRow();
@@ -569,8 +595,7 @@ public class TrackerThread implements Runnable {
                         swingerrorPanel.SetSelectionRow(0);
                         swingerrorPanel.Repeat_Data_Loops(++number);
                     }
-                }
-                System.out.println("singleread_currPoint:" + currPoint);   
+                }                
             }
             if(GetCurrProcess() == CURRENTPROCESS.COORDTRANS_SINGLEREAD_PROCESS) {
                 coordTransPanel.SetTrackerValue(values);
@@ -645,6 +670,7 @@ public class TrackerThread implements Runnable {
         if(frame.GetTypeSel() == TYPESEL.SIXDOF_ROBOT) {
             if(GetCurrProcess() == CURRENTPROCESS.CHECK_PAGE_CONTINUE_PROCESS) {
                 checkPanel.SetTrackerValue(values);
+                System.out.println("656checkPanel.currPoint:" + currPoint);
             }
             if(GetCurrProcess() == CURRENTPROCESS.POSE_PAGE_CONTINUE_PROCESS) {
                 posePanel.SetTrackerValue(values);
@@ -660,15 +686,15 @@ public class TrackerThread implements Runnable {
             }
             if(GetCurrProcess() == CURRENTPROCESS.MINTIME_PAGE_CONTINUE_PROCESS){
                 minTimeLocalPanel.SetTrackerValue(values);
-                System.out.println("1111111111111");
-                System.out.println("minTimeLocalPanel.currPoint:" + currPoint);
+                System.out.println("671minTimeLocalPanel.currPoint:" + currPoint);
                 repeatMT[times*8 + currPoint][0] = Double.parseDouble(String.valueOf(values[0]));
                 repeatMT[times*8 + currPoint][1] = Double.parseDouble(String.valueOf(values[1]));
                 repeatMT[times*8 + currPoint][2] = Double.parseDouble(String.valueOf(values[2]));
 
             }
             if(GetCurrProcess() == CURRENTPROCESS.SWINGERROR_PAGE_CONTINUE_PROCESS) {
-                swingerrorPanel.SetTrackerValue(values);     
+                swingerrorPanel.SetTrackerValue(values);   
+                System.out.println("679swingerrorPanel.currPoint:" + currPoint);
                 repeatSE[times*20 + currPoint][0] = Double.parseDouble(String.valueOf(values[0]));
                 repeatSE[times*20 + currPoint][1] = Double.parseDouble(String.valueOf(values[1]));
                 repeatSE[times*20 + currPoint][2] = Double.parseDouble(String.valueOf(values[2]));
@@ -725,10 +751,11 @@ public class TrackerThread implements Runnable {
             CURRENTPROCESS ret = ProgressManager();
             if(ret == CURRENTPROCESS.TURN_MANUAL_PROCESS) return 1;
             if(ret == CURRENTPROCESS.POSE_PAGE_BREAK_AUTO_PROCESS) return 1;
+            if(ret == CURRENTPROCESS.MINTIME_PAGE_BREAK_AUTO_PROCESS)return 1;
             if(ret == CURRENTPROCESS.SWINGERROR_PAGE_BREAK_AUTO_PROCESS)return 1;
             if(ret == CURRENTPROCESS.DISCONNECT_PROCESS) return 1;
             if(GetCurrProcess() == CURRENTPROCESS.CHECK_PAGE_CONTINUE_PROCESS) {
-                if(currPoint != checkPanel.GetSelectionRow()) {
+                if(currPoint != checkPanel.GetSelectionRow()) {          
                     checkPanel.SetSelectionRow(currPoint);
                 }
             }
@@ -789,6 +816,15 @@ public class TrackerThread implements Runnable {
                     values[0] = dataBuf[dataBuf.length-1][0];//average_X;                                          
                     values[1] = dataBuf[dataBuf.length-1][1];//average_Y;                                          
                     values[2] = dataBuf[dataBuf.length-1][2];//average_Z;
+                    System.out.println("819MinTime.currPoint:" + currPoint);
+                    minTime[minTimeNum] = System.currentTimeMillis();
+                    if(minTimeNum != 0 && minTimeNum != 8 && minTimeNum != 16){
+                        minTimeTotal[minTimeNum] = minTime[minTimeNum] - minTime[minTimeNum-1];
+                        System.out.println("minTimeTotal[" + minTimeNum + "]:" + minTimeTotal[minTimeNum]);
+                    }
+                    if(minTimeNum < 24){
+                        ++minTimeNum;
+                    }
                     if(currPoint == 1 && GetCurrProcess() == CURRENTPROCESS.SWINGERROR_PAGE_CONTINUE_PROCESS){
                             startTime = System.currentTimeMillis();
                     }
@@ -796,6 +832,7 @@ public class TrackerThread implements Runnable {
                     //校准检测数据处理
                     if(GetCurrProcess() == CURRENTPROCESS.CHECK_PAGE_CONTINUE_PROCESS) {
                         checkPanel.SetTrackerValue(values);
+                        System.out.println("809checkPanel.currPoint:" + currPoint);
                         if(currPoint >= 50) {
                             currPoint = 0;
                             StopContinueMeasurement();
@@ -893,31 +930,40 @@ public class TrackerThread implements Runnable {
                     //最小定位时间监测数据处理
                     if(GetCurrProcess() == CURRENTPROCESS.MINTIME_PAGE_CONTINUE_PROCESS) {
                         minTimeLocalPanel.SetTrackerValue(values);
-                        System.out.println("22222222222");
-                        System.out.println("minTimeLocalPanel.currPoint:" + currPoint);
+                        System.out.println("904minTimeLocalPanel.currPoint:" + currPoint);
+                        if(currPoint == 1){
+                            startTime = System.currentTimeMillis();
+                        }
                         repeatMT[times*8 + currPoint-1][0] = dataBuf[dataBuf.length-1][0];                      
                         repeatMT[times*8 + currPoint-1][1] = dataBuf[dataBuf.length-1][1];
-                        repeatMT[times*8 + currPoint-1][2] = dataBuf[dataBuf.length-1][2];
-                    }
-                    if(currPoint >= 8){
-                        currPoint = 0;
-                        ++times;
-                    }
-                    if(times < 3)
-                            minTimeLocalPanel.Repeat_Data_MT(times + 1);      
-                    else if(times >= 3){
+                        repeatMT[times*8 + currPoint-1][2] = dataBuf[dataBuf.length-1][2];         
+                        if(currPoint >= 8){
+                            currPoint = 0;
+                            ++times;
+                            if(times < 3)
+                                minTimeLocalPanel.Repeat_Data_MT(times + 1);  
+                        }
+                        if(times >= 3){
                             times = 0;
                             StopContinueMeasurement();
                             //实际距离计算
                             double[] result_distance = new double[32];
-                            double[][] directive_Value;
-                            directive_Value = minTimeLocalPanel.GetTableValue(); 
+                            //double[][] directive_Value;
+                            //directive_Value = minTimeLocalPanel.GetTableValue(); 
                             for(int i = 0; i < 4; i++){
                                 if(i < 3){
                                     for(int j = 0; j < 8; j++){
-                                        result_distance[i*8+j] = Math.sqrt(Math.pow(repeatMT[i*8+j][0] - directive_Value[j][0],2)
-                                            + Math.pow(repeatMT[i*8+j][1] - directive_Value[j][1],2)+ Math.pow(repeatMT[i*8+j][2] - directive_Value[j][2],2));
-                                         System.out.println("result_distance[" + (i*8+j) + "]" + result_distance[i*8+j]);
+                                        if(j == 0){
+                                            //result_distance[i*8+j] = Math.sqrt(Math.pow(repeatMT[i*8+j][0] - directive_Value[j][0],2)
+                                            //   + Math.pow(repeatMT[i*8+j][1] - directive_Value[j][1],2)+ Math.pow(repeatMT[i*8+j][2] - directive_Value[j][2],2));
+                                            result_distance[i*8+j] = Math.sqrt(Math.pow(repeatMT[i*8+j][0] - repeatMT[i*8+j][0],2)
+                                                + Math.pow(repeatMT[i*8+j][1] - repeatMT[i*8+j][1],2)+ Math.pow(repeatMT[i*8+j][2] - repeatMT[i*8+j][2],2));
+                                        }
+                                        else{
+                                            result_distance[i*8+j] = Math.sqrt(Math.pow(repeatMT[i*8+j][0] - repeatMT[i*8+j-1][0],2)
+                                                + Math.pow(repeatMT[i*8+j][1] - repeatMT[i*8+j-1][1],2)+ Math.pow(repeatMT[i*8+j][2] - repeatMT[i*8+j-1][2],2));
+                                        }
+                                        System.out.println("result_distance[" + (i*8+j) + "]" + result_distance[i*8+j]);
                                     }
                                 }
                                 else{
@@ -926,37 +972,22 @@ public class TrackerThread implements Runnable {
                                         System.out.println("result_distance[" + (i*8+j) + "]" + result_distance[i*8+j]);
                                     }
                                 }
- 
-                            minTimeLocalPanel.SetResultValue(result_distance);
-                            
-                            
-                            
-                            //使用时间计算
-                            
                             } 
-                            
+                            minTimeLocalPanel.SetResultValue(result_distance);
+                            //使用时间计算
+                            for(int j = 0; j < 8; j++){
+                                minTimeTotal[24+j] =   minTimeTotal[j] + minTimeTotal[8+j] + minTimeTotal[16+j];
+                                minTimeTotal[24+j] /= 3;
+                            }  
+                            minTimeLocalPanel.SetminTimeValue(minTimeTotal);                       
+                            return 1;
+                        }    
                     }
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
+
                     //摆动偏差检测数据处理
                     if(GetCurrProcess() == CURRENTPROCESS.SWINGERROR_PAGE_CONTINUE_PROCESS) {
                         swingerrorPanel.SetTrackerValue(values);
-                        System.out.println("wingerrorPanel.currPoint:" + currPoint);
+                        System.out.println("976swingerrorPanel.currPoint:" + currPoint);
                         if(currPoint == 1){
                             startTime = System.currentTimeMillis();
                         }
@@ -1020,7 +1051,7 @@ public class TrackerThread implements Runnable {
                             }
                             Sc /= 3;
                             
-                             //测到的摆幅平均值Sa
+                            //测到的摆幅平均值Sa
                             double Sa = 0.0;
                             double[] Front_distance = new double[21];
                             double[] After_distance = new double[21];
@@ -1392,6 +1423,18 @@ private void ContinueMeasurementScara(){
                     System.out.println(e);
                 }
                 SetCurrEvent(CURRENTEVENT.STARTCALIBRATE_POSE_EVENT);
+                break;
+            case MINTIME_PAGE_CONTINUE_PROCESS:
+                try {
+                    if(tracker != null) {
+                        tracker.stopMeasurePoint();
+                        tracker.setBlocking(false);
+                    }
+                }
+                catch(TrackerException e) {
+                    System.out.println(e);
+                }
+                SetCurrEvent(CURRENTEVENT.STARTCALIBRATE_MINTIME_EVENT);
                 break;
             case SWINGERROR_PAGE_CONTINUE_PROCESS:
                 try {
@@ -1825,13 +1868,19 @@ private void ContinueMeasurementScara(){
     
     
     private CURRENTPROCESS ProgressManager() {
-        if(GetCurrProcess() == CURRENTPROCESS.CHECK_PAGE_SINGLEREAD_PROCESS ||
-                GetCurrProcess() == CURRENTPROCESS.POSE_PAGE_SINGLEREAD_PROCESS) {
+        if(GetCurrProcess() == CURRENTPROCESS.CHECK_PAGE_SINGLEREAD_PROCESS || GetCurrProcess() == CURRENTPROCESS.POSE_PAGE_SINGLEREAD_PROCESS
+                || GetCurrProcess() == CURRENTPROCESS.SWINGERROR_PAGE_SINGLEREAD_PROCESS || GetCurrProcess() == CURRENTPROCESS.MINTIME_PAGE_SINGLEREAD_PROCESS) {
             if(GetCurrProcess() == CURRENTPROCESS.CHECK_PAGE_SINGLEREAD_PROCESS) {
                 checkPanel.SetSelectionRow(currPoint);
             }
             if(GetCurrProcess() == CURRENTPROCESS.POSE_PAGE_SINGLEREAD_PROCESS) {
                 posePanel.SetSelectionRow(currPoint);
+            }
+            if(GetCurrProcess() == CURRENTPROCESS.MINTIME_PAGE_SINGLEREAD_PROCESS) {
+                minTimeLocalPanel.SetSelectionRow(currPoint);
+            }
+            if(GetCurrProcess() == CURRENTPROCESS.SWINGERROR_PAGE_SINGLEREAD_PROCESS) {
+                swingerrorPanel.SetSelectionRow(currPoint);
             }
             ProcessChanged(CURRENTPROCESS.TURN_MANUAL_PROCESS);
             try {
@@ -1855,9 +1904,23 @@ private void ContinueMeasurementScara(){
             }
             return CURRENTPROCESS.POSE_PAGE_BREAK_AUTO_PROCESS;
         }
+        if(GetCurrProcess() == CURRENTPROCESS.MINTIME_PAGE_BREAK_AUTO_PROCESS) {
+            ProcessChanged(CURRENTPROCESS.NONE_PROCESS);
+            minTimeLocalPanel.SetSelectionRow(0);
+            minTimeLocalPanel.Repeat_Data_Loops(1);
+            try {
+                tracker.stopMeasurePoint();
+                tracker.setBlocking(false);
+            }
+            catch(TrackerException e) {
+                System.out.println(e);
+            }
+            return CURRENTPROCESS.MINTIME_PAGE_BREAK_AUTO_PROCESS;
+        }
         if(GetCurrProcess() == CURRENTPROCESS.SWINGERROR_PAGE_BREAK_AUTO_PROCESS) {
             ProcessChanged(CURRENTPROCESS.NONE_PROCESS);
             swingerrorPanel.SetSelectionRow(0);
+            swingerrorPanel.Repeat_Data_Loops(1);
             try {
                 tracker.stopMeasurePoint();
                 tracker.setBlocking(false);

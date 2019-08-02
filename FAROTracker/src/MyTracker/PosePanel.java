@@ -427,11 +427,11 @@ public class PosePanel extends MyPanel{
     private void singleRead_ButtonActionPerformed(ActionEvent ae) {
         if(trackerThread == null) {
             trackerThread = MyTracker.getTrackerThread();
-        }
+        }/*
         if(trackerThread.GetCurrProcess() != CURRENTPROCESS.NONE_PROCESS) {
             JOptionPane.showMessageDialog(this, "测量进行中，请稍后重试！");
             return;
-        }
+        }*/
         trackerThread.ProcessChanged(CURRENTPROCESS.POSE_PAGE_SINGLEREAD_PROCESS);
         trackerThread.SingleReadMeasure();
     }

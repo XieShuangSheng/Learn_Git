@@ -464,11 +464,11 @@ public class SwingErrorPanel extends MyPanel{
     private void singleRead_ButtonActionPerformed(ActionEvent ae) {
         if(trackerThread == null) {
             trackerThread = MyTracker.getTrackerThread();
-        }
+        }/*
         if(trackerThread.GetCurrProcess() != CURRENTPROCESS.NONE_PROCESS) {
             JOptionPane.showMessageDialog(this, "测量进行中，请稍后重试！");
             return;
-        }
+        }*/
         DwellTime_TextField.setEditable(false);
         DwellTime_TextField.setBackground(Color.lightGray);
         SetSpeed_TextField.setEditable(false);
@@ -496,11 +496,11 @@ public class SwingErrorPanel extends MyPanel{
                 && trackerThread.GetCurrProcess() != CURRENTPROCESS.SWINGERROR_PAGE_BREAK_AUTO_PROCESS) {
             JOptionPane.showMessageDialog(this, "测量进行中，请稍后重试！");
             return;
-        }  
+        } /* 
         if(trackerThread.GetCoordTransformFlag() == false) {
             JOptionPane.showMessageDialog(this, "请先进行自动标定或点击手动计算完成标定！");
             return;
-        }
+        }*/
         DwellTime_TextField.setEditable(false);
         DwellTime_TextField.setBackground(Color.lightGray);
         SetSpeed_TextField.setEditable(false);
@@ -513,6 +513,10 @@ public class SwingErrorPanel extends MyPanel{
         if(trackerThread == null) {
             trackerThread = MyTracker.getTrackerThread();
         }
+        DwellTime_TextField.setEditable(true);
+        DwellTime_TextField.setBackground(Color.white);
+        SetSpeed_TextField.setEditable(true);
+        SetSpeed_TextField.setBackground(Color.white);
         trackerThread.ProcessChanged(CURRENTPROCESS.SWINGERROR_PAGE_BREAK_AUTO_PROCESS);
         trackerThread.frame.SetCmdSeqString("终止检测中···");
 

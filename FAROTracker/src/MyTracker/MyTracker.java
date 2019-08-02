@@ -1150,10 +1150,8 @@ public class MyTracker extends javax.swing.JFrame
                         trajectoryPanel.SetValueAll(trajData);
                         
                         String[][] minTimeData = new String[9][6];
-                        int rowCnt_minTime = sheet_minTime.getRows();
-                        System.out.println("rowCnt_minTime:" + rowCnt_minTime);
-                        int columnCnt_minTime = sheet_minTime.getColumns();
-                        System.out.println("columnCnt_minTime:" + columnCnt_minTime);
+                        int rowCnt_minTime = sheet_minTime.getRows();   
+                        int columnCnt_minTime = sheet_minTime.getColumns();                    
                         for(int i = 1;i < rowCnt_minTime;++i) {
                             for(int j = 0;j < columnCnt_minTime;++j) {
                                 minTimeData[i-1][j] = sheet_minTime.getCell(j,i).getContents();

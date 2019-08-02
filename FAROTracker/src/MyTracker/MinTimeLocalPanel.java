@@ -48,10 +48,10 @@ public class MinTimeLocalPanel extends MyPanel{
 
         this.setLayout(null);
         minTimeLocal_Panel.setBounds(0,0,550,400);
-        minTimeResult_Panel.setBounds(0,400,800,400);
+        minTimeResult_Panel.setBounds(0,400,800,380);
         minTime19Table_Panel.setBounds(550,0,900,170);
         minTime20Table_Panel.setBounds(550,170,900,230);
-        minTimeLoops_Panel.setBounds(800,400,600,400);
+        minTimeLoops_Panel.setBounds(800,400,550,380);
                 
         this.add(minTimeLocal_Panel);
         this.add(minTimeResult_Panel);
@@ -180,16 +180,30 @@ public class MinTimeLocalPanel extends MyPanel{
         button_Panel.add( Loops_Value);
         minTimeLocal_Panel.add(button_Panel,BorderLayout.SOUTH);
         
-        //singleRead_Button = new JButton("手动读取");
+        singleRead_Button = new JButton("手动读取");
         autoRead_Button = new JButton("启动检测");
         breakAuto_Button = new JButton("终止检测");
-        //singleRead_Button.setEnabled(false);
+        singleRead_Button.setEnabled(false);
         autoRead_Button.setEnabled(false);
         breakAuto_Button.setEnabled(false);
-        //button_Panel.add(singleRead_Button);
+        button_Panel.add(singleRead_Button);
         button_Panel.add(autoRead_Button);
         button_Panel.add(breakAuto_Button);
         
+        DwellTime_Label = new JLabel("停顿时间");
+        DwellTime_TextField = new JTextField("0",4);
+        DwellTime_TextField.setEditable(true);
+        DwellTime_TextField.setBackground(Color.white);
+        button_Panel.add(DwellTime_Label);
+        button_Panel.add(DwellTime_TextField);
+        
+        //手动读取
+        singleRead_Button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                singleRead_ButtonActionPerformed(ae);
+            }
+        });
         //启动检测
         autoRead_Button.addActionListener(new ActionListener() {
            @Override
@@ -236,10 +250,10 @@ public class MinTimeLocalPanel extends MyPanel{
                         }   break;
                     case 1:
                         if(i % 2 == 0){
-                            ResultmodelData[i][j] = "距离";
+                            ResultmodelData[i][j] = "距离(mm)";
                         }
                         else
-                            ResultmodelData[i][j] = "时间";
+                            ResultmodelData[i][j] = "时间(s)";
                         break;
                     default:
                         ResultmodelData[i][j] = 0.0;
@@ -352,10 +366,23 @@ public class MinTimeLocalPanel extends MyPanel{
     }
     
     public void ProcessEnable() {
+        singleRead_Button.setEnabled(true);
         autoRead_Button.setEnabled(true);
         breakAuto_Button.setEnabled(true);
     }
-    
+    private void singleRead_ButtonActionPerformed(ActionEvent ae) {
+        if(trackerThread == null) {
+            trackerThread = MyTracker.getTrackerThread();
+        }/*
+        if(trackerThread.GetCurrProcess() != CURRENTPROCESS.NONE_PROCESS) {
+            JOptionPane.showMessageDialog(this, "测量进行中，请稍后重试！");
+            return;
+        }*/
+        DwellTime_TextField.setEditable(false);
+        DwellTime_TextField.setBackground(Color.lightGray);
+        trackerThread.ProcessChanged(CURRENTPROCESS.MINTIME_PAGE_SINGLEREAD_PROCESS);
+        trackerThread.SingleReadMeasure();
+    }
     private void autoRead_ButtonActionPerformed(ActionEvent ae) {
         if(trackerThread == null) {
             trackerThread = MyTracker.getTrackerThread();
@@ -369,6 +396,8 @@ public class MinTimeLocalPanel extends MyPanel{
             JOptionPane.showMessageDialog(this, "请先进行自动标定或点击手动计算完成标定！");
             return;
         }*/
+        DwellTime_TextField.setEditable(false);
+        DwellTime_TextField.setBackground(Color.lightGray);
         trackerThread.ProcessChanged(CURRENTPROCESS.MINTIME_PAGE_CONTINUE_PROCESS);
         trackerThread.StartCalibration();
     }
@@ -376,16 +405,18 @@ public class MinTimeLocalPanel extends MyPanel{
         if(trackerThread == null) {
             trackerThread = MyTracker.getTrackerThread();
         }
+        DwellTime_TextField.setEditable(true);
+        DwellTime_TextField.setBackground(Color.white);
         trackerThread.ProcessChanged(CURRENTPROCESS.MINTIME_PAGE_BREAK_AUTO_PROCESS);
         trackerThread.frame.SetCmdSeqString("终止检测中···");
 
     }
     public void SetTrackerValue(final Object[] values) {
-        int row = points_Table.getSelectedRow();
-        if(row == -1){
-            row += 1;
+        if(points_Table == null){
+            System.out.println("0000000000");
         }
-        System.out.println("SetTrackerValue_row(386):" + row);
+        int row = points_Table.getSelectedRow();
+        System.out.println("minTmerow:" + row);
         DecimalFormat df = new DecimalFormat("0.000"); //设置数据显示格式为X.XXXX
         if(points_Table.isRowSelected(row)) { 
             for(int i = 4;i < 7;++i) {
@@ -406,6 +437,26 @@ public class MinTimeLocalPanel extends MyPanel{
                             case 4:
                             case 6:   
                                 double v = values[n];
+                                ++n;
+                                result_Table.setValueAt(df.format(v),i,j);               
+                                break;
+                            default:
+                                break;
+                }
+            }      
+        }
+    }
+        public void SetminTimeValue(final double[] values) {
+        DecimalFormat df = new DecimalFormat("0.000"); //设置数据显示格式为X.XXXX
+        int n = 0;
+        for(int i = 0;i < 8;++i){
+            for(int j = 2;j < 10;++j) {
+                switch (i) {
+                            case 1:
+                            case 3: 
+                            case 5:
+                            case 7:   
+                                double v = values[n] /1000;
                                 ++n;
                                 result_Table.setValueAt(df.format(v),i,j);               
                                 break;
@@ -452,6 +503,14 @@ public class MinTimeLocalPanel extends MyPanel{
         }
         return number;
     }
+    public double GetDwellTimeValue(){
+        DwellTime_Value = Double.parseDouble( DwellTime_TextField.getText());
+        return DwellTime_Value;
+    }
+    public void Repeat_Data_Loops(double diff) {
+        DecimalFormat df = new DecimalFormat("0");
+        Loops_Value.setText(df.format(diff));
+    }
    
     private JPanel minTimeLocal_Panel;
     private JPanel minTimeResult_Panel;
@@ -472,7 +531,11 @@ public class MinTimeLocalPanel extends MyPanel{
     private JLabel Loops_Label;
     private JLabel Loops_Value;
     
-   //private JButton singleRead_Button;
+    public JTextField DwellTime_TextField;
+    private JLabel DwellTime_Label;
+    private double DwellTime_Value;
+
+    private JButton singleRead_Button;
     private JButton autoRead_Button;
     private JButton breakAuto_Button;
     
