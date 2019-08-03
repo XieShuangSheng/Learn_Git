@@ -278,16 +278,36 @@ public class PosePanel extends MyPanel{
         result_ScrollPane.setViewportView(result_Table);
         result_Panel.add(result_ScrollPane);
         
-        repeatDiff_Label = new JLabel("RP");
-        repeatDiff_Value = new JLabel("0.000");
+        
+        APp_Label = new JLabel("APp");
+        APp_Value = new JLabel("0.000");
+        APa_Label = new JLabel("APa");
+        APa_Value = new JLabel("0.000");
+        APb_Label = new JLabel("APb");
+        APb_Value = new JLabel("0.000");
+        APc_Label = new JLabel("APc");
+        APc_Value = new JLabel("0.000");
+        RPp_Label = new JLabel("RPp");
+        RPp_Value = new JLabel("0.000");
         RPa_Label = new JLabel("RPa");
         RPa_Value = new JLabel("0.000");
         RPb_Label = new JLabel("RPb");
         RPb_Value = new JLabel("0.000");
         RPc_Label = new JLabel("RPc");
         RPc_Value = new JLabel("0.000");
-        repeatDiff_Value.setBorder(BorderFactory.createEtchedBorder());
-        repeatDiff_Value.setPreferredSize(new Dimension(80,22));
+        APp_Value.setBorder(BorderFactory.createEtchedBorder());
+        APp_Value.setPreferredSize(new Dimension(80,22));
+        APa_Value.setBorder(BorderFactory.createEtchedBorder());
+        APa_Label.setPreferredSize(new Dimension(40,22));
+        APa_Value.setPreferredSize(new Dimension(80,22));
+        APb_Value.setBorder(BorderFactory.createEtchedBorder());
+        APb_Label.setPreferredSize(new Dimension(40,22));
+        APb_Value.setPreferredSize(new Dimension(80,22));
+        APc_Value.setBorder(BorderFactory.createEtchedBorder());
+        APc_Label.setPreferredSize(new Dimension(40,22));
+        APc_Value.setPreferredSize(new Dimension(80,22));
+        RPp_Value.setBorder(BorderFactory.createEtchedBorder());
+        RPp_Value.setPreferredSize(new Dimension(80,22));
         RPa_Value.setBorder(BorderFactory.createEtchedBorder());
         RPa_Label.setPreferredSize(new Dimension(40,22));
         RPa_Value.setPreferredSize(new Dimension(80,22));
@@ -303,20 +323,36 @@ public class PosePanel extends MyPanel{
         c.fill = GridBagConstraints.BOTH;
         c.gridheight = 1;
         c.gridx = 0;c.gridy = 0;
-        RP_Panel.add(repeatDiff_Label,c);
+        RP_Panel.add(APp_Label,c);
         c.gridx = 1;c.gridy = 0;
-        RP_Panel.add(repeatDiff_Value,c);
+        RP_Panel.add(APp_Value,c);
         c.gridx = 0;c.gridy = 1;
-        RP_Panel.add(RPa_Label,c);
+        RP_Panel.add(APa_Label,c);
         c.gridx = 1;c.gridy = 1;
-        RP_Panel.add(RPa_Value,c);
+        RP_Panel.add(APa_Value,c);
         c.gridx = 2;c.gridy = 1;
-        RP_Panel.add(RPb_Label,c);
+        RP_Panel.add(APb_Label,c);
         c.gridx = 3;c.gridy = 1;
-        RP_Panel.add(RPb_Value,c);
+        RP_Panel.add(APb_Value,c);
         c.gridx = 4;c.gridy = 1;
-        RP_Panel.add(RPc_Label,c);
+        RP_Panel.add(APc_Label,c);
         c.gridx = 5;c.gridy = 1;
+        RP_Panel.add(APc_Value,c);
+        c.gridx = 0;c.gridy = 2;
+        RP_Panel.add(RPp_Label,c);
+        c.gridx = 1;c.gridy = 2;
+        RP_Panel.add(RPp_Value,c);
+        c.gridx = 0;c.gridy = 3;
+        RP_Panel.add(RPa_Label,c);
+        c.gridx = 1;c.gridy = 3;
+        RP_Panel.add(RPa_Value,c);
+        c.gridx = 2;c.gridy = 3;
+        RP_Panel.add(RPb_Label,c);
+        c.gridx = 3;c.gridy = 3;
+        RP_Panel.add(RPb_Value,c);
+        c.gridx = 4;c.gridy = 3;
+        RP_Panel.add(RPc_Label,c);
+        c.gridx = 5;c.gridy = 3;
         RP_Panel.add(RPc_Value,c);
         result_Panel.add(RP_Panel);
         
@@ -538,18 +574,18 @@ public class PosePanel extends MyPanel{
     
     public Object[] GetRepeatDiff() {
         Object[] ret = new Object[1];
-        ret[0] = repeatDiff_Value.getText();
+        ret[0] = RPp_Value.getText();
         return ret;
     }
     public void SetRepeatDiff(Object[] values) {
         for(int i = 0;i < values.length;++i) {
-            repeatDiff_Value.setText(String.valueOf(values[i]));
+            RPp_Value.setText(String.valueOf(values[i]));
         }
     }
     
     public void RepeatDiffDisp(double diff) {
         DecimalFormat df = new DecimalFormat("0.000");
-        repeatDiff_Value.setText(df.format(diff));
+        RPp_Value.setText(df.format(diff));
     }
     
     public void SetValueAll(final Object[][] values) {
@@ -609,8 +645,16 @@ public class PosePanel extends MyPanel{
     private ChangeDialogWorldCoord chgDialogWorldCoord;
     private TrackerThread trackerThread;
     
-    private JLabel repeatDiff_Label;
-    private JLabel repeatDiff_Value;
+    private JLabel APp_Label;
+    private JLabel APp_Value;
+    private JLabel APa_Label;
+    private JLabel APa_Value;
+    private JLabel APb_Label;
+    private JLabel APb_Value;
+    private JLabel APc_Label;
+    private JLabel APc_Value;
+    private JLabel RPp_Label;
+    private JLabel RPp_Value;
     private JLabel RPa_Label;
     private JLabel RPa_Value;
     private JLabel RPb_Label;

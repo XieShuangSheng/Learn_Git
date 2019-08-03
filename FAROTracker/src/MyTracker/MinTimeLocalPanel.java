@@ -391,11 +391,11 @@ public class MinTimeLocalPanel extends MyPanel{
                 && trackerThread.GetCurrProcess() != CURRENTPROCESS.MINTIME_PAGE_BREAK_AUTO_PROCESS) {
             JOptionPane.showMessageDialog(this, "测量进行中，请稍后重试！");
             return;
-        }  /*
+        }  
         if(trackerThread.GetCoordTransformFlag() == false) {
             JOptionPane.showMessageDialog(this, "请先进行自动标定或点击手动计算完成标定！");
             return;
-        }*/
+        }
         DwellTime_TextField.setEditable(false);
         DwellTime_TextField.setBackground(Color.lightGray);
         trackerThread.ProcessChanged(CURRENTPROCESS.MINTIME_PAGE_CONTINUE_PROCESS);
@@ -412,9 +412,6 @@ public class MinTimeLocalPanel extends MyPanel{
 
     }
     public void SetTrackerValue(final Object[] values) {
-        if(points_Table == null){
-            System.out.println("0000000000");
-        }
         int row = points_Table.getSelectedRow();
         System.out.println("minTmerow:" + row);
         DecimalFormat df = new DecimalFormat("0.000"); //设置数据显示格式为X.XXXX

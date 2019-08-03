@@ -140,6 +140,7 @@ public class CoordTransform extends JDialog{
         DigitalMeter d;
         DecimalFormat df = new DecimalFormat("0.0000");
         for(int i = 0;i < values.length;++i) {
+            System.out.println("base[" + i + "]" + values[i]);
             d = (DigitalMeter)d_List.get(i);
             d.SetValue(df.format(values[i]));
         }

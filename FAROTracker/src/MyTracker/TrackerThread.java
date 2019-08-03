@@ -673,6 +673,17 @@ public class TrackerThread implements Runnable {
                 System.out.println("656checkPanel.currPoint:" + currPoint);
             }
             if(GetCurrProcess() == CURRENTPROCESS.POSE_PAGE_CONTINUE_PROCESS) {
+                //坐标转换
+                double R_Data = base[0] * base[5] * base[10] + base[1] * base[6] * base[8] + base[2] * base[4] * base[9]
+                        - base[2] * base[5] * base[8] - base[1] * base[4] * base[10] - base[0] * base[6] * base[9];
+                double[] tem_values = new double[3];
+                for(int i = 0;i < 3; i++){  
+                    tem_values[i] = Double.parseDouble(String.valueOf(values[i]));
+                    tem_values[i] = (tem_values[i] - base[12+i]) / R_Data;
+                    values[i] = tem_values[i];
+
+                }
+                
                 posePanel.SetTrackerValue(values);
                 posePanel.AddPointsDisplay(values);
 
@@ -690,7 +701,17 @@ public class TrackerThread implements Runnable {
                 repeatMT[times*8 + currPoint][0] = Double.parseDouble(String.valueOf(values[0]));
                 repeatMT[times*8 + currPoint][1] = Double.parseDouble(String.valueOf(values[1]));
                 repeatMT[times*8 + currPoint][2] = Double.parseDouble(String.valueOf(values[2]));
-
+                if(GetCurrProcess() == CURRENTPROCESS.MINTIME_PAGE_CONTINUE_PROCESS) {
+                    System.out.println("819MinTime.currPoint:" + currPoint);
+                    minTime[minTimeNum] = System.currentTimeMillis();
+                    if(minTimeNum != 0 && minTimeNum != 8 && minTimeNum != 16){
+                        minTimeTotal[minTimeNum] = minTime[minTimeNum] - minTime[minTimeNum-1];
+                        System.out.println("minTimeTotal[" + minTimeNum + "]:" + minTimeTotal[minTimeNum]);
+                    }
+                    if(minTimeNum < 24){
+                        ++minTimeNum;
+                    }
+                }
             }
             if(GetCurrProcess() == CURRENTPROCESS.SWINGERROR_PAGE_CONTINUE_PROCESS) {
                 swingerrorPanel.SetTrackerValue(values);   
@@ -816,14 +837,16 @@ public class TrackerThread implements Runnable {
                     values[0] = dataBuf[dataBuf.length-1][0];//average_X;                                          
                     values[1] = dataBuf[dataBuf.length-1][1];//average_Y;                                          
                     values[2] = dataBuf[dataBuf.length-1][2];//average_Z;
-                    System.out.println("819MinTime.currPoint:" + currPoint);
-                    minTime[minTimeNum] = System.currentTimeMillis();
-                    if(minTimeNum != 0 && minTimeNum != 8 && minTimeNum != 16){
-                        minTimeTotal[minTimeNum] = minTime[minTimeNum] - minTime[minTimeNum-1];
-                        System.out.println("minTimeTotal[" + minTimeNum + "]:" + minTimeTotal[minTimeNum]);
-                    }
-                    if(minTimeNum < 24){
-                        ++minTimeNum;
+                    if(GetCurrProcess() == CURRENTPROCESS.MINTIME_PAGE_CONTINUE_PROCESS) {
+                        System.out.println("819MinTime.currPoint:" + currPoint);
+                        minTime[minTimeNum] = System.currentTimeMillis();
+                        if(minTimeNum != 0 && minTimeNum != 8 && minTimeNum != 16){
+                            minTimeTotal[minTimeNum] = minTime[minTimeNum] - minTime[minTimeNum-1];
+                            System.out.println("minTimeTotal[" + minTimeNum + "]:" + minTimeTotal[minTimeNum]);
+                        }
+                        if(minTimeNum < 24){
+                            ++minTimeNum;
+                        }
                     }
                     if(currPoint == 1 && GetCurrProcess() == CURRENTPROCESS.SWINGERROR_PAGE_CONTINUE_PROCESS){
                             startTime = System.currentTimeMillis();
@@ -841,6 +864,17 @@ public class TrackerThread implements Runnable {
                     }
                     //位姿检测数据处理
                     if(GetCurrProcess() == CURRENTPROCESS.POSE_PAGE_CONTINUE_PROCESS) {
+                        //坐标转换
+                        double R_Data = base[0] * base[5] * base[10] + base[1] * base[6] * base[8] + base[2] * base[4] * base[9]
+                                - base[2] * base[5] * base[8] - base[1] * base[4] * base[10] - base[0] * base[6] * base[9];
+                        double[] tem_values = new double[3];
+                        for(int i = 0;i < 3; i++){  
+                            tem_values[i] = Double.parseDouble(String.valueOf(values[i]));
+                            tem_values[i] = (tem_values[i] - base[12+i]) / R_Data;
+                            values[i] = tem_values[i];
+
+                        }
+                        
                         posePanel.SetTrackerValue(values);
                         posePanel.AddPointsDisplay(values);
                         posePanel.SetSelectionRow_Result(times);
@@ -979,7 +1013,8 @@ public class TrackerThread implements Runnable {
                                 minTimeTotal[24+j] =   minTimeTotal[j] + minTimeTotal[8+j] + minTimeTotal[16+j];
                                 minTimeTotal[24+j] /= 3;
                             }  
-                            minTimeLocalPanel.SetminTimeValue(minTimeTotal);                       
+                            minTimeLocalPanel.SetminTimeValue(minTimeTotal); 
+                            minTimeNum = 0;                         
                             return 1;
                         }    
                     }
@@ -1753,7 +1788,7 @@ private void ContinueMeasurementScara(){
                     dir,couple_en,couple_cal,zero_cal,base);
 
             for(int i = 0;i < calNumber+5;++i) {
-                System.out.println("Pose_Diff:"+diff_prev[i]);
+                System.out.println("1769 Pose_Diff:"+diff_prev[i]);
             }
             if(retValue) {
                 Object[] pose_data = new Object[4];
@@ -1768,7 +1803,7 @@ private void ContinueMeasurementScara(){
                         if (diff_prev[i] < min_d) {
                                 min_d = diff_prev[i];
                         }
-                        System.out.println("Outputs:" + outputs[i*3] + " " + outputs[i*3+1] + " " + outputs[i*3+2]);
+                        System.out.println("1784 Outputs:" + outputs[i*3] + " " + outputs[i*3+1] + " " + outputs[i*3+2]);
                         ave_d += diff_prev[i];
                 }
                 ave_d /= calNumber;
@@ -1781,7 +1816,7 @@ private void ContinueMeasurementScara(){
                 ave_d = Math.sqrt(total);
 
                 pose_data[0] = times;
-                pose_data[1] = max_d;
+                pose_data[1] = max_d; //最大偏差
                 pose_data[3] = ave_d; //有效偏差
                 posePanel.DispResult(pose_data);
             }

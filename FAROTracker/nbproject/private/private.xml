@@ -3,9 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/G:/Learn_Git/FAROTracker/src/MyTracker/MinTimeLocalPanel.java</file>
+            <file>file:/G:/Learn_Git/FAROTracker/src/MyTracker/CoordTransform.java</file>
+            <file>file:/G:/Learn_Git/FAROTracker/src/MyTracker/PosePanel.java</file>
+            <file>file:/G:/Learn_Git/FAROTracker/src/MyTracker/TrackerThread.java</file>
             <file>file:/G:/Learn_Git/FAROTracker/src/MyTracker/TrajectoryPanel.java</file>
-            <file>file:/G:/Learn_Git/FAROTracker/src/MyTracker/TrajectorySpeedPanel.java</file>
+            <file>file:/G:/Learn_Git/FAROTracker/src/MyTracker/CheckPanel.java</file>
         </group>
     </open-files>
 </project-private>
