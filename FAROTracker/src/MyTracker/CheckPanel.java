@@ -1193,9 +1193,11 @@ public class CheckPanel extends MyPanel{
         return coordTransform;
     }
     
+
+    
     private JPanel main_Panel;
     private JPanel result_Panel;
-    private JPanel param_Panel;
+    public JPanel param_Panel;
     private JPanel struct_Panel;
     
     private JTable main_Table;
@@ -1229,12 +1231,12 @@ public class CheckPanel extends MyPanel{
     private JTable param_Table;
     private JScrollPane param_ScrollPane;
     private DigitalMeter L1_TextField;
-    private DigitalMeter L23_TextField;
-    private DigitalMeter L34a_TextField;
-    private DigitalMeter L34b_TextField;
-    private DigitalMeter L56_TextField;
-    private DigitalMeter X1ecc_TextField;
-    private DigitalMeter L24_TextField;
+    public DigitalMeter L23_TextField;
+    public DigitalMeter L34a_TextField;
+    public DigitalMeter L34b_TextField;
+    public DigitalMeter L56_TextField;
+    public DigitalMeter X1ecc_TextField;
+    public DigitalMeter L24_TextField;
     private List Dx_List;
     private DigitalMeter pause_TextField;
     private JCheckBox h45_CheckBox;

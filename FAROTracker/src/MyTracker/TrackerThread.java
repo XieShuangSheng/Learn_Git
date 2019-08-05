@@ -672,19 +672,8 @@ public class TrackerThread implements Runnable {
                 checkPanel.SetTrackerValue(values);
                 System.out.println("656checkPanel.currPoint:" + currPoint);
             }
-            if(GetCurrProcess() == CURRENTPROCESS.POSE_PAGE_CONTINUE_PROCESS) {
-                //坐标转换
-                double R_Data = base[0] * base[5] * base[10] + base[1] * base[6] * base[8] + base[2] * base[4] * base[9]
-                        - base[2] * base[5] * base[8] - base[1] * base[4] * base[10] - base[0] * base[6] * base[9];
-                double[] tem_values = new double[3];
-                for(int i = 0;i < 3; i++){  
-                    tem_values[i] = Double.parseDouble(String.valueOf(values[i]));
-                    tem_values[i] = (tem_values[i] - base[12+i]) / R_Data;
-                    values[i] = tem_values[i];
-
-                }
-                
-                posePanel.SetTrackerValue(values);
+            if(GetCurrProcess() == CURRENTPROCESS.POSE_PAGE_CONTINUE_PROCESS) {   
+                posePanel.SetTrackerValue(Coordinate_Transformation(values));
                 posePanel.AddPointsDisplay(values);
 
                 repeatDiff[times*5 + currPoint][0] = Double.parseDouble(String.valueOf(values[0]));
@@ -864,6 +853,7 @@ public class TrackerThread implements Runnable {
                     }
                     //位姿检测数据处理
                     if(GetCurrProcess() == CURRENTPROCESS.POSE_PAGE_CONTINUE_PROCESS) {
+                        /*
                         //坐标转换
                         double R_Data = base[0] * base[5] * base[10] + base[1] * base[6] * base[8] + base[2] * base[4] * base[9]
                                 - base[2] * base[5] * base[8] - base[1] * base[4] * base[10] - base[0] * base[6] * base[9];
@@ -874,8 +864,9 @@ public class TrackerThread implements Runnable {
                             values[i] = tem_values[i];
 
                         }
+                        */
                         
-                        posePanel.SetTrackerValue(values);
+                        posePanel.SetTrackerValue(Coordinate_Transformation(values));
                         posePanel.AddPointsDisplay(values);
                         posePanel.SetSelectionRow_Result(times);
                         repeatDiff[times*5 + currPoint-1][0] = dataBuf[dataBuf.length-1][0];                        
@@ -1644,8 +1635,10 @@ private void ContinueMeasurementScara(){
             tempPanel.GetErrorDisp().RefreshChartData(diff_prev, diff_post);
             SetCoordTransformFlag(true);
             
-            double[][] worldPos = CoordinatorTrans();
+            double[][] worldPos = Joint_BaseCoordinates();
+            //double[][] worldPos = CoordinatorTrans();
             posePanel.CoordTrans(worldPos);
+            System.out.println("11111111111111111111111111111111111111111");
         }
         else if(obj instanceof CheckPanelScara) {
             CheckPanelScara tempPanel = (CheckPanelScara)obj;
@@ -2264,5 +2257,186 @@ private void ContinueMeasurementScara(){
         System.out.println("WorldPos:"+worldPos[0] + " " + worldPos[1] + " " + worldPos[2] + " " + worldPos[3] + " " + worldPos[4] + " " + worldPos[5]);
         return worldPos;
     }
+     //追踪仪坐标坐标转换基坐标
+    private Object[] Coordinate_Transformation(final Object[] values){
+        double R_Data = base[0] * base[5] * base[10] + base[1] * base[6] * base[8] + base[2] * base[4] * base[9]
+                    - base[2] * base[5] * base[8] - base[1] * base[4] * base[10] - base[0] * base[6] * base[9];
+                        double[] tem_values = new double[3];
+        for(int i = 0;i < 3; i++){  
+        tem_values[i] = Double.parseDouble(String.valueOf(values[i]));
+        tem_values[i] = (tem_values[i] - base[12+i]) / R_Data;
+        values[i] = tem_values[i];
+        }
+    return values;
+    }
+    //关节坐标转换基坐标
+    private double[][] Joint_BaseCoordinates(){
+
+        double[][] J1 = new double[3][3];
+        double[][] J2 = new double[3][3];
+        double[][] J3 = new double[3][3];
+        double[][] J4 = new double[3][3];
+        double[][] J5 = new double[3][3];
+        double[][] J6 = new double[3][3];
+        double[][] J12 = new double[3][3];
+        double[][] J34 = new double[3][3];
+        double[][] J56 = new double[3][3];
+        double[][] J123 = new double[3][3];
+        double[][] J1234 = new double[3][3];
+        double[][] J12345 = new double[3][3];
+        double[][] J123456 = new double[3][3];
+        
+        Object[][] vObj = posePanel.GetTableValue();
+        double[][] theta = new double[5][6];
+        double[][] worldPos = new double[vObj.length][6];
+        for(int i = 0;i < theta.length;++i) {
+            for(int j = 0;j < theta[0].length;++j) {
+                theta[i][j] = Double.parseDouble(String.valueOf(vObj[i][j]));
+            }
+        }                
+        double[] tem_Jdata = new double[6];
+        for(int h = 0;h < theta.length; h++){
+            for(int i = 0;i < theta[0].length; i++){  
+                tem_Jdata[i] = Double.parseDouble(String.valueOf(theta[h][i]));
+                System.out.println("tem_Jdata[" + i + "]" + tem_Jdata[i]);
+                //tem_Jdata[i] = Math.toRadians(tem_Jdata[i]);      
+                switch(i){
+                    case 0 :
+                        J1[0][0] = Math.cos(tem_Jdata[i]);
+                        J1[0][1] = 0 - Math.sin(tem_Jdata[i]);
+                        J1[1][0] = Math.sin(tem_Jdata[i]);
+                        J1[1][1] = Math.cos(tem_Jdata[i]);
+                        J1[2][2] = 1.0;
+                        break;
+                    case 1 :
+                        J2[0][0] = Math.cos(tem_Jdata[i]);
+                        J2[0][2] = Math.sin(tem_Jdata[i]);
+                        J2[2][0] = 0 - Math.sin(tem_Jdata[i]);
+                        J2[2][2] = Math.cos(tem_Jdata[i]);
+                        J2[1][1] = 1.0;
+                        break;
+                    case 2 :
+                        J3[0][0] = Math.cos(tem_Jdata[i]);
+                        J3[0][2] = Math.sin(tem_Jdata[i]);
+                        J3[2][0] = 0 - Math.sin(tem_Jdata[i]);
+                        J3[2][2] = Math.cos(tem_Jdata[i]);
+                        J3[1][1] = 1.0;
+                        break;
+                    case 3 :
+                        J4[0][0] = Math.cos(tem_Jdata[i]);
+                        J4[0][1] = 0 - Math.sin(tem_Jdata[i]);
+                        J4[1][0] = Math.sin(tem_Jdata[i]);
+                        J4[1][1] = Math.cos(tem_Jdata[i]);
+                        J4[2][2] = 1.0;
+                        break;
+                    case 4 :
+                        J5[0][0] = Math.cos(tem_Jdata[i]);
+                        J5[0][2] = Math.sin(tem_Jdata[i]);
+                        J5[2][0] = 0 - Math.sin(tem_Jdata[i]);
+                        J5[2][2] = Math.cos(tem_Jdata[i]);
+                        J5[1][1] = 1.0;
+                        break;
+                    case 5 :
+                        J6[0][0] = Math.cos(tem_Jdata[i]);
+                        J6[0][1] = 0 - Math.sin(tem_Jdata[i]);
+                        J6[1][0] = Math.sin(tem_Jdata[i]);
+                        J6[1][1] = Math.cos(tem_Jdata[i]);
+                        J6[2][2] = 1.0;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            J12 = Matrix3X3_Multiplication3X3(J1,J2);
+            J34 = Matrix3X3_Multiplication3X3(J3,J4);
+            J56 = Matrix3X3_Multiplication3X3(J5,J6);
+            J1234 = Matrix3X3_Multiplication3X3(J12,J34);
+            J123456 = Matrix3X3_Multiplication3X3(J1234,J56);
+
+
+            double Y_Degrees = Math.toDegrees(Math.asin(J123456[0][2]));
+            double X_Degrees = Math.toDegrees(Math.acos(J123456[2][2] / Math.cos(Y_Degrees)));    
+            System.out.println("Math.acos(J123456[2][2]]" + Math.acos(J123456[2][2])); 
+            System.out.println("Math.cos(Y_Degrees)" + Math.cos(Y_Degrees));
+            
+            double Z_Degrees = Math.toDegrees(Math.acos(J123456[0][0] / Math.cos(Y_Degrees)));
+
+            double X1ecc = Double.parseDouble(String.valueOf(checkPanel.X1ecc_TextField.GetValueDouble()));
+            double L23 = Double.parseDouble(String.valueOf(checkPanel.L23_TextField.GetValueDouble()));
+            double L34a = Double.parseDouble(String.valueOf(checkPanel.L34a_TextField.GetValueDouble()));
+            double L34b = Double.parseDouble(String.valueOf(checkPanel.L34b_TextField.GetValueDouble()));
+            double L24 = Double.parseDouble(String.valueOf(checkPanel.L24_TextField.GetValueDouble()));
+            double L56 = Double.parseDouble(String.valueOf(checkPanel.L56_TextField.GetValueDouble()));
+
+            double[][] offset_X1ecc = new double[3][1];
+            double[][] offset_L23 = new double[3][1];
+            double[][] offset_L34 = new double[3][1];
+            double[][] offset_L24 = new double[3][1];
+            double[][] offset_L56 = new double[3][1];
+
+            offset_X1ecc[0][0] = X1ecc;
+            offset_L23[2][0] = L23;
+            offset_L34[2][0] = L34a;
+            offset_L34[0][0] = L34b;
+            offset_L24[1][0] = L24;
+            offset_L56[0][0] = L56;
+
+            J123 = Matrix3X3_Multiplication3X3(J12,J3);
+            J12345 = Matrix3X3_Multiplication3X3(J1234,J5);
+
+            double[][] XYZ12 = Adding_Matrices(Matrix3X3_Multiplication3X1(J1,offset_X1ecc),Matrix3X3_Multiplication3X1(J12,offset_L23));
+            double[][] XYZ34 = Adding_Matrices(Matrix3X3_Multiplication3X1(J123,offset_L34),Matrix3X3_Multiplication3X1(J1234,offset_L24));
+            double[][] XYZ1234 = Adding_Matrices(XYZ12,XYZ34);
+            double[][] XYZ_SUM = Adding_Matrices(XYZ1234,Matrix3X3_Multiplication3X1(J12345,offset_L56));
+
+            worldPos[h][3] = X_Degrees;
+            worldPos[h][4] = Y_Degrees;
+            worldPos[h][5] = Z_Degrees;
+            worldPos[h][0] = XYZ_SUM[0][0];
+            worldPos[h][1] = XYZ_SUM[1][0];
+            worldPos[h][2] = XYZ_SUM[2][0];
+            System.out.println("worldPos[" + h + "][0]" + worldPos[h][0]);
+            System.out.println("worldPos[" + h + "][1]" + worldPos[h][1]);
+            System.out.println("worldPos[" + h + "][2]" + worldPos[h][2]);
+            System.out.println("worldPos[" + h + "][3]" + worldPos[h][3]);
+            System.out.println("worldPos[" + h + "][4]" + worldPos[h][4]);
+            System.out.println("worldPos[" + h + "][5]" + worldPos[h][5]);
+        } 
+        return worldPos;
+        
+    }
+    //3x3与3x3矩阵相乘
+    private double[][] Matrix3X3_Multiplication3X3(final double[][] Ja,final double[][] Jb){
+        double[][] Jab = new double[3][3];
+        Jab[0][0] = Ja[0][0] * Jb[0][0] + Ja[0][1] * Jb[1][0] + Ja[0][2] * Jb[2][0];
+        Jab[0][1] = Ja[0][0] * Jb[0][1] + Ja[0][1] * Jb[1][1] + Ja[0][2] * Jb[2][1];
+        Jab[0][2] = Ja[0][0] * Jb[0][2] + Ja[0][1] * Jb[1][2] + Ja[0][2] * Jb[2][2];
+        
+        Jab[1][0] = Ja[1][0] * Jb[0][0] + Ja[1][1] * Jb[1][0] + Ja[1][2] * Jb[2][0];
+        Jab[1][1] = Ja[1][0] * Jb[0][1] + Ja[1][1] * Jb[1][1] + Ja[1][2] * Jb[2][1];
+        Jab[1][2] = Ja[1][0] * Jb[0][2] + Ja[1][1] * Jb[1][2] + Ja[1][2] * Jb[2][2];
+        
+        Jab[2][0] = Ja[2][0] * Jb[0][0] + Ja[2][1] * Jb[1][0] + Ja[2][2] * Jb[2][0];
+        Jab[2][1] = Ja[2][0] * Jb[0][1] + Ja[2][1] * Jb[1][1] + Ja[2][2] * Jb[2][1];
+        Jab[2][2] = Ja[2][0] * Jb[0][2] + Ja[2][1] * Jb[1][2] + Ja[2][2] * Jb[2][2];
     
+        return Jab;
+    }
+    //3x3与3x1矩阵相乘
+    private double[][] Matrix3X3_Multiplication3X1(final double[][] Ja,final double[][] Jb){
+        double[][] Jab = new double[3][3];
+        Jab[0][0] = Ja[0][0] * Jb[0][0] + Ja[0][1] * Jb[1][0] + Ja[0][2] * Jb[2][0];
+        Jab[1][0] = Ja[1][0] * Jb[0][0] + Ja[1][1] * Jb[1][0] + Ja[1][2] * Jb[2][0];
+        Jab[2][0] = Ja[2][0] * Jb[0][0] + Ja[2][1] * Jb[1][0] + Ja[2][2] * Jb[2][0];
+            
+        return Jab;
+    }  
+    private double[][] Adding_Matrices(final double[][] Ja,final double[][] Jb){
+        double[][] Jab = new double[3][1];
+        Jab[0][0] = Ja[0][0] + Jb[0][0];
+        Jab[1][0] = Ja[1][0] + Jb[1][0];
+        Jab[2][0] = Ja[2][0] + Jb[2][0];
+        return Jab;
+    }
+            
 }
