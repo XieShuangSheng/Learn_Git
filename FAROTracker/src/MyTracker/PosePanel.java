@@ -550,6 +550,17 @@ public class PosePanel extends MyPanel{
         }
         return value;
     }
+    public Object[][] GetWorldCoordPointsTablValue(){
+        int rowCnt =  worldCoordPoints_TablePanel.getRowCount();
+        int columnCnt =  worldCoordPoints_TablePanel.getColumnCount();
+        Object[][] value = new Object[rowCnt][columnCnt];
+        for(int i = 0; i < rowCnt;++i) {
+            for(int j = 1;j < columnCnt;++j) {
+                value[i][j-1] = points_Table.getModel().getValueAt(i, j);
+            }
+        }
+        return value;
+    }
     
     public void CoordTrans(double[][] values) {
         int row = worldCoordPoints_TablePanel.getRowCount();
@@ -583,9 +594,13 @@ public class PosePanel extends MyPanel{
         }
     }
     
-    public void RepeatDiffDisp(double diff) {
+    public void RepeatDiff_RPp(double diff) {
         DecimalFormat df = new DecimalFormat("0.000");
         RPp_Value.setText(df.format(diff));
+    }
+    public void RepeatDiff_APp(double diff) {
+        DecimalFormat df = new DecimalFormat("0.000");
+        APp_Value.setText(df.format(diff));
     }
     
     public void SetValueAll(final Object[][] values) {

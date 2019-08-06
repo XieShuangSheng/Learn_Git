@@ -864,8 +864,7 @@ public class TrackerThread implements Runnable {
                             values[i] = tem_values[i];
 
                         }
-                        */
-                        
+                        */                  
                         posePanel.SetTrackerValue(Coordinate_Transformation(values));
                         posePanel.AddPointsDisplay(values);
                         posePanel.SetSelectionRow_Result(times);
@@ -873,8 +872,7 @@ public class TrackerThread implements Runnable {
                         repeatDiff[times*5 + currPoint-1][1] = dataBuf[dataBuf.length-1][1];
                         repeatDiff[times*5 + currPoint-1][2] = dataBuf[dataBuf.length-1][2];
                         System.out.println("dataBuf:" + dataBuf[dataBuf.length-1][0] + ":" +
-                                dataBuf[dataBuf.length-1][1] + ":" +
-                                dataBuf[dataBuf.length-1][2]);
+                                dataBuf[dataBuf.length-1][1] + ":" + dataBuf[dataBuf.length-1][2]);
                         System.out.println("repeatDiff:" + repeatDiff[times*5 + currPoint-1][0] + ":" +
                                 repeatDiff[times*5 + currPoint-1][1] + ":" +
                                 repeatDiff[times*5 + currPoint-1][2]);
@@ -893,17 +891,16 @@ public class TrackerThread implements Runnable {
                             times = 0;
                             StopContinueMeasurement();
 
-                            //位置重复性RPl = lbar + 3St
+                            //位置重复性RPp = lbar + 3St
                             //lbar = sum(lj)/n,其中j=1~n
                             //lj = sqrt((xj-xbar)^2+(yj-ybar)^2+(zj-zbar)^2)
                             //xbar,ybar,zbar为坐标的平均值
                             //St=sqrt(sum(lj-lbar)^2/(n-1))
-                            double[] RPl = new double[5];
                             double[] St = new double[5];
                             double[] lbar = new double[5];
-                            double[] xbar = new double[30];
-                            double[] ybar = new double[30];
-                            double[] zbar = new double[30];
+                            double[] xbar = new double[5];
+                            double[] ybar = new double[5];
+                            double[] zbar = new double[5];
                             double[][] lj = new double[5][30];
 
                             //第i个点的第j次实验
@@ -941,14 +938,34 @@ public class TrackerThread implements Runnable {
                                 St[i] /= 30-1;
                                 St[i] = Math.sqrt(St[i]);
                             }
-                            double aveRPl = 0.0;
+                            double[] RPp = new double[5];
+                            double aveRPp = 0.0;
                             for(int i = 0;i < 5;++i) {
-                                RPl[i] = lbar[i] + 3*St[i];
-                                aveRPl += RPl[i];
+                                RPp[i] = lbar[i] + 3*St[i];
+                                aveRPp += RPp[i];
                             }
-
-                            aveRPl /= 5;
-                            posePanel.RepeatDiffDisp(aveRPl);
+                            aveRPp /= 5;
+                            posePanel.RepeatDiff_RPp(aveRPp);
+                            
+                            double[] xins = new double[5];
+                            double[] yins = new double[5];
+                            double[] zins = new double[5];
+                            Object[][] tem_value = posePanel.GetWorldCoordPointsTablValue();
+                            for(int i = 0;i < 5;++i){
+                                xins[i] = Double.parseDouble(String.valueOf(tem_value[i][0]));
+                                yins[i] = Double.parseDouble(String.valueOf(tem_value[i][1]));
+                                zins[i] = Double.parseDouble(String.valueOf(tem_value[i][2]));
+                            }
+                            double[] APp = new double[5];
+                            double aveAPp = 0.0;
+                            for(int i = 0;i < 5;++i) {
+                                APp[i] = Math.sqrt(Math.pow(xbar[i] - xins[i], 2) + Math.pow(ybar[i] - yins[i], 2) 
+                                        + Math.pow(zbar[i] - zins[i], 2));
+                                aveAPp += APp[i];
+                            }
+                            aveAPp /= 5;
+                            posePanel.RepeatDiff_APp(aveAPp);
+                            
                             return 1;
                         }
                     }
@@ -2353,14 +2370,17 @@ private void ContinueMeasurementScara(){
             J1234 = Matrix3X3_Multiplication3X3(J12,J34);
             J123456 = Matrix3X3_Multiplication3X3(J1234,J56);
 
-
-            double Y_Degrees = Math.toDegrees(Math.asin(J123456[0][2]));
-            double X_Degrees = Math.toDegrees(Math.acos(J123456[2][2] / Math.cos(Y_Degrees)));    
-            System.out.println("Math.acos(J123456[2][2]]" + Math.acos(J123456[2][2])); 
-            System.out.println("Math.cos(Y_Degrees)" + Math.cos(Y_Degrees));
             
-            double Z_Degrees = Math.toDegrees(Math.acos(J123456[0][0] / Math.cos(Y_Degrees)));
-
+            double Y_Degrees = Math.toDegrees(Math.asin(J123456[0][2]));
+            double X_Degrees = Math.toDegrees(Math.acos(J123456[2][2] / Math.cos(Math.asin(J123456[0][2]))));    
+            double Z_Degrees = Math.toDegrees(Math.acos(J123456[0][0] / Math.cos(Math.asin(J123456[0][2]))));
+            /*
+            double Y_Degrees = Math.toDegrees(Math.asin(0 - J123456[2][0]));
+            double X_Degrees = Math.toDegrees(Math.acos(J123456[2][2] / Math.cos(Math.asin(0 - J123456[2][0]))));
+            //double X_Degrees = Math.toDegrees(Math.asin(J123456[2][1] / Math.cos(Math.asin(0 - J123456[2][0]))));
+            //double Z_Degrees = Math.toDegrees(Math.asin(J123456[1][0] / Math.cos(Math.asin(0 - J123456[2][0]))));
+            double Z_Degrees = Math.toDegrees(Math.acos(J123456[0][0] / Math.cos(Math.asin(0 - J123456[2][0]))));
+            */
             double X1ecc = Double.parseDouble(String.valueOf(checkPanel.X1ecc_TextField.GetValueDouble()));
             double L23 = Double.parseDouble(String.valueOf(checkPanel.L23_TextField.GetValueDouble()));
             double L34a = Double.parseDouble(String.valueOf(checkPanel.L34a_TextField.GetValueDouble()));
