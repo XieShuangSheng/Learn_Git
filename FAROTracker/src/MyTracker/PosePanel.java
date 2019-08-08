@@ -279,21 +279,21 @@ public class PosePanel extends MyPanel{
         result_Panel.add(result_ScrollPane);
         
         
-        APp_Label = new JLabel("APp");
+        APp_Label = new JLabel("APp：");
         APp_Value = new JLabel("0.000");
-        APa_Label = new JLabel("APa");
+        APa_Label = new JLabel("APa：");
         APa_Value = new JLabel("0.000");
-        APb_Label = new JLabel("APb");
+        APb_Label = new JLabel("APb：");
         APb_Value = new JLabel("0.000");
-        APc_Label = new JLabel("APc");
+        APc_Label = new JLabel("APc：");
         APc_Value = new JLabel("0.000");
-        RPp_Label = new JLabel("RPp");
+        RPp_Label = new JLabel("RPp：");
         RPp_Value = new JLabel("0.000");
-        RPa_Label = new JLabel("RPa");
+        RPa_Label = new JLabel("RPa：");
         RPa_Value = new JLabel("0.000");
-        RPb_Label = new JLabel("RPb");
+        RPb_Label = new JLabel("RPb：");
         RPb_Value = new JLabel("0.000");
-        RPc_Label = new JLabel("RPc");
+        RPc_Label = new JLabel("RPc：");
         RPc_Value = new JLabel("0.000");
         APp_Value.setBorder(BorderFactory.createEtchedBorder());
         APp_Value.setPreferredSize(new Dimension(80,22));

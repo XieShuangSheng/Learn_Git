@@ -5,6 +5,7 @@
  */
 package MyTracker;
 
+import static MyTracker.TrackerThread.tracker;
 import java.awt.*;
 import java.awt.event.*;
 import java.text.DecimalFormat;
@@ -34,31 +35,87 @@ public class TrajectoryPanel extends MyPanel{
         startMeasure_Button = new JButton("启动测量");
         stopMeasure_Button = new JButton("停止测量");
         
-        maxError_Label = new JLabel("最大偏差：");
-        minError_Label = new JLabel("最小偏差：");
-        aveError_Label = new JLabel("有效偏差：");
-        maxError_Value = new JLabel("0.000");
-        minError_Value = new JLabel("0.000");
-        aveError_Value = new JLabel("0.000");
+        APp_Label = new JLabel("ATp：");
+        APp_Value = new JLabel("0.000");
+        APa_Label = new JLabel("ATa：");
+        APa_Value = new JLabel("0.000");
+        APb_Label = new JLabel("ATb：");
+        APb_Value = new JLabel("0.000");
+        APc_Label = new JLabel("ATc：");
+        APc_Value = new JLabel("0.000");
+        RPp_Label = new JLabel("RTp：");
+        RPp_Value = new JLabel("0.000");
+        RPa_Label = new JLabel("RTa：");
+        RPa_Value = new JLabel("0.000");
+        RPb_Label = new JLabel("RTb：");
+        RPb_Value = new JLabel("0.000");
+        RPc_Label = new JLabel("RTc：");
+        RPc_Value = new JLabel("0.000");
+        APp_Value.setBorder(BorderFactory.createEtchedBorder());
+        APp_Value.setPreferredSize(new Dimension(80,22));
+        APa_Value.setBorder(BorderFactory.createEtchedBorder());
+        APa_Label.setPreferredSize(new Dimension(40,22));
+        APa_Value.setPreferredSize(new Dimension(80,22));
+        APb_Value.setBorder(BorderFactory.createEtchedBorder());
+        APb_Label.setPreferredSize(new Dimension(40,22));
+        APb_Value.setPreferredSize(new Dimension(80,22));
+        APc_Value.setBorder(BorderFactory.createEtchedBorder());
+        APc_Label.setPreferredSize(new Dimension(40,22));
+        APc_Value.setPreferredSize(new Dimension(80,22));
+        RPp_Value.setBorder(BorderFactory.createEtchedBorder());
+        RPp_Value.setPreferredSize(new Dimension(80,22));
+        RPa_Value.setBorder(BorderFactory.createEtchedBorder());
+        RPa_Label.setPreferredSize(new Dimension(40,22));
+        RPa_Value.setPreferredSize(new Dimension(80,22));
+        RPb_Value.setBorder(BorderFactory.createEtchedBorder());
+        RPb_Label.setPreferredSize(new Dimension(40,22));
+        RPb_Value.setPreferredSize(new Dimension(80,22));
+        RPc_Value.setBorder(BorderFactory.createEtchedBorder());
+        RPc_Label.setPreferredSize(new Dimension(40,22));
+        RPc_Value.setPreferredSize(new Dimension(80,22));
+        JPanel ARP_Panel = new JPanel();
+        ARP_Panel.setLayout(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.BOTH;
+        c.gridheight = 1;
+        c.gridx = 0;c.gridy = 0;
+        ARP_Panel.add(APp_Label,c);
+        c.gridx = 1;c.gridy = 0;
+        ARP_Panel.add(APp_Value,c);
+        c.gridx = 0;c.gridy = 1;
+        ARP_Panel.add(APa_Label,c);
+        c.gridx = 1;c.gridy = 1;
+        ARP_Panel.add(APa_Value,c);
+        c.gridx = 2;c.gridy = 1;
+        ARP_Panel.add(APb_Label,c);
+        c.gridx = 3;c.gridy = 1;
+        ARP_Panel.add(APb_Value,c);
+        c.gridx = 4;c.gridy = 1;
+        ARP_Panel.add(APc_Label,c);
+        c.gridx = 5;c.gridy = 1;
+        ARP_Panel.add(APc_Value,c);
+        c.gridx = 0;c.gridy = 2;
+        ARP_Panel.add(RPp_Label,c);
+        c.gridx = 1;c.gridy = 2;
+        ARP_Panel.add(RPp_Value,c);
+        c.gridx = 0;c.gridy = 3;
+        ARP_Panel.add(RPa_Label,c);
+        c.gridx = 1;c.gridy = 3;
+        ARP_Panel.add(RPa_Value,c);
+        c.gridx = 2;c.gridy = 3;
+        ARP_Panel.add(RPb_Label,c);
+        c.gridx = 3;c.gridy = 3;
+        ARP_Panel.add(RPb_Value,c);
+        c.gridx = 4;c.gridy = 3;
+        ARP_Panel.add(RPc_Label,c);
+        c.gridx = 5;c.gridy = 3;
+        ARP_Panel.add(RPc_Value,c);
+        result_Panel.add(ARP_Panel);
         
         chgDialog = new ChangeDialog(this);
         
         pointsList = new ArrayList<>();
-        
-//        for(int i = 0;i <10;++i) {
-//            for(int j = 0;j < 200;++j) {
-//                Object[] v = new Object[3];
-//                v[0] = 1*1000 + j;
-//                v[1] = 1*2000 + j;
-//                v[2] = 1*3000 + j;
-//                SetPointsValue(i,v);
-//            }
-//        }
-//        
-//        Object[] ret = GetPointsValue();
-//        for(int i = 0;i < ret.length;++i) {
-//            System.out.println(ret[i]);
-//        }
+
         
         settingPoints_Panel.setBorder(BorderFactory.createTitledBorder("轨迹测量"));//直线端点
         readingPoints_Panel.setBorder(BorderFactory.createTitledBorder("测量点位"));
@@ -68,24 +125,7 @@ public class TrajectoryPanel extends MyPanel{
         curve_Panel.setBorder(BorderFactory.createRaisedSoftBevelBorder());
         curveRot_Panel.setBorder(BorderFactory.createRaisedSoftBevelBorder());
         
-        Dimension dLabel = new Dimension(60,20);
-        Dimension dValue = new Dimension(80,20);
-        maxError_Value.setBorder(BorderFactory.createEtchedBorder());
-        minError_Value.setBorder(BorderFactory.createEtchedBorder());
-        aveError_Value.setBorder(BorderFactory.createEtchedBorder());
-        maxError_Label.setPreferredSize(dLabel);
-        minError_Label.setPreferredSize(dLabel);
-        aveError_Label.setPreferredSize(dLabel);
-        maxError_Value.setPreferredSize(dValue);
-        minError_Value.setPreferredSize(dValue);
-        aveError_Value.setPreferredSize(dValue);
-        result_Panel.setLayout(new FlowLayout());
-        result_Panel.add(maxError_Label);
-        result_Panel.add(maxError_Value);
-        result_Panel.add(minError_Label);
-        result_Panel.add(minError_Value);
-        result_Panel.add(aveError_Label);
-        result_Panel.add(aveError_Value);
+
         
         settingPoints_Panel.setLayout(new BorderLayout());
         readingPoints_Panel.setLayout(new BorderLayout());
@@ -185,86 +225,6 @@ public class TrajectoryPanel extends MyPanel{
         trajCurveRotation = new TrajectoryCurve("转换后曲线","");
         curveRot_Panel.add(trajCurveRotation);
         trajCurveRotation.SetChart3DSize(new Dimension(640,390));
-        
-//        String[] readingColumn = {"点位","坐标X","坐标Y","坐标Z"};
-//        Object[][] readingModelData = new Object[20][4];
-//        for(int i = 0;i < readingModelData.length;++i) {
-//            for(int j = 0;j < readingModelData[0].length;++j) {
-//                if(j == 0) readingModelData[i][j] = i+1;
-//                else readingModelData[i][j] = 0.0;
-//            }
-//        }
-//        readingPoints_Table = new JTable(readingModelData,readingColumn);
-//        readingPoints_Panel.add(readingPoints_Table);
-//        DefaultTableModel readingTableModel = new DefaultTableModel(readingModelData.length,readingModelData[0].length) {
-//            @Override
-//            public boolean isCellEditable(int row,int column) {
-//                return false;
-//            }
-//            @Override
-//            public String getColumnName(int column) {
-//                return readingColumn[column];
-//            }
-//            @Override
-//            public int getColumnCount() {
-//                return readingColumn.length;
-//            }
-//            @Override
-//            public int getRowCount() {
-//                return readingModelData.length;
-//            }
-//            @Override
-//            public Object getValueAt(int row,int column) {
-//                return readingModelData[row][column];
-//            }
-//            @Override
-//            public void setValueAt(Object obj,int row,int column) {
-//                readingModelData[row][column] = obj;
-//                fireTableCellUpdated(row,column);
-//            }
-//            @Override
-//            public Class<?> getColumnClass(int column) {
-//                return readingModelData[0][column].getClass();
-//            }
-//        };
-//        readingPoints_Table.setModel(readingTableModel);
-//        columns = readingPoints_Table.getColumnCount();
-//        for(int i = 0;i < columns;++i) {
-//            column = readingPoints_Table.getColumnModel().getColumn(i);
-//            column.setPreferredWidth(80);
-//        }
-//        DefaultTableCellRenderer readingPoints_TCR = new DefaultTableCellRenderer() {
-//            @Override
-//            public Component getTableCellRendererComponent(JTable talbe,Object value,boolean isSelected,
-//                    boolean hasFocus,int row,int column) {
-//                if(row % 2 == 0) {
-//                    setBackground(new Color(203,203,203));
-//                }
-//                else {
-//                    setBackground(Color.WHITE);
-//                }
-//                return super.getTableCellRendererComponent(talbe, value, isSelected, hasFocus, row, column);
-//            }
-//        };
-//        for(int i = 0;i < columns;++i) {
-//            readingPoints_Table.getColumn(readingPoints_Table.getColumnName(i)).setCellRenderer(readingPoints_TCR);
-//        }
-//        readingPoints_Table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-//        JTableHeader reading_header = readingPoints_Table.getTableHeader();
-//        reading_header.setFont(new Font("楷体",Font.PLAIN,14));
-//        readingPoints_Table.setRowHeight(20);
-//        readingPoints_Table.setShowGrid(true);
-//        readingPoints_Table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-//        readingPoints_ScrollPane = new JScrollPane(readingPoints_Table,
-//                ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
-//                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-//        readingPoints_ScrollPane.setViewportView(readingPoints_Table);
-//        
-//        readingPoints_Panel.add(readingPoints_ScrollPane);
-//        readingPoints_Panel.add(startMeasure_Button,BorderLayout.SOUTH);
-        
-
-
 
         change_Button.addActionListener(new ActionListener(){
             @Override
@@ -323,9 +283,7 @@ public class TrajectoryPanel extends MyPanel{
         trackerThread.StartBackgroundCalibration();
         trajCurve.ClearLineTrajectory();
         trajCurveRotation.ClearLineTrajectory();
-        maxError_Value.setText("0.0000");
-        minError_Value.setText("0.0000");
-        aveError_Value.setText("0.0000");
+
     }
     
     private void stopMeasure_ButtonActionPerformed(ActionEvent ae) {
@@ -352,7 +310,7 @@ public class TrajectoryPanel extends MyPanel{
         int cnt = 0;
         List tempList = new ArrayList<>();
         Object[] tempObj;
-        Object[] ret = new Object[50*3];
+        Object[] ret = new Object[10*3];
         for(int i = 0;i < pointsList.size();++i) {
             GeneralPair p = (GeneralPair<Integer,Object[]>)pointsList.get(i);
             if(Integer.parseInt(p.getFirst().toString()) == 0) {
@@ -361,7 +319,7 @@ public class TrajectoryPanel extends MyPanel{
             }
         }
         int pointsCnt = 0;
-        double skip = cnt / 50.0;
+        double skip = cnt / 10.0;
         for(int i = 0;i < cnt;) {
             GeneralPair p = (GeneralPair<Integer,Object[]>)tempList.get(pointsCnt);
             tempObj = (Object[])p.getSecond();
@@ -370,7 +328,7 @@ public class TrajectoryPanel extends MyPanel{
             ret[pointsCnt*3 + 2] = tempObj[2];
             i+=skip;
             ++pointsCnt;
-            if(pointsCnt >= 50) {
+            if(pointsCnt >= 10) {
                 break;
             }
         }
@@ -401,25 +359,25 @@ public class TrajectoryPanel extends MyPanel{
         }
         DecimalFormat df = new DecimalFormat("0.000");
         String v = df.format(maxError);
-        maxError_Value.setText(v);
+        //maxError_Value.setText(v);
         v = df.format(minError);
-        minError_Value.setText(v);
+        //minError_Value.setText(v);
         v = df.format(aveError);
-        aveError_Value.setText(v);
+       // aveError_Value.setText(v);
     }
     
     public Object[] GetResult() {
         Object[] ret = new Object[3];
-        ret[0] = maxError_Value.getText();
-        ret[1] = minError_Value.getText();
-        ret[2] = aveError_Value.getText();
+       // ret[0] = maxError_Value.getText();
+       // ret[1] = minError_Value.getText();
+       // ret[2] = aveError_Value.getText();
         return ret;
     }
     public void SetResult(Object[] values) {
         if(values.length >= 3) {
-            maxError_Value.setText(String.valueOf(values[0]));
-            minError_Value.setText(String.valueOf(values[1]));
-            aveError_Value.setText(String.valueOf(values[2]));
+           // maxError_Value.setText(String.valueOf(values[0]));
+           // minError_Value.setText(String.valueOf(values[1]));
+           // aveError_Value.setText(String.valueOf(values[2]));
         }
     }
     
@@ -451,6 +409,7 @@ public class TrajectoryPanel extends MyPanel{
         for(int i = 0;i < values.size();++i) {
             data[i] = Double.parseDouble(values.get(i).toString());
         }
+        System.out.println("p size"+values.size());
         trajCurve.AddLineTrajectory(data);
     }
     
@@ -461,6 +420,14 @@ public class TrajectoryPanel extends MyPanel{
         }
         trajCurveRotation.AddLineTrajectory(data);
     }
+    public void RepeatDiff_RTp(double diff) {
+        DecimalFormat df = new DecimalFormat("0.000");
+        RPp_Value.setText(df.format(diff));
+    }
+    public void RepeatDiff_ATp(double diff) {
+        DecimalFormat df = new DecimalFormat("0.000");
+        APp_Value.setText(df.format(diff));
+    }
     
     private JPanel settingPoints_Panel;
     private JPanel readingPoints_Panel;
@@ -470,12 +437,23 @@ public class TrajectoryPanel extends MyPanel{
     private JScrollPane settingPoints_ScrollPane;
     private JScrollPane readingPoints_ScrollPane;
     private JScrollPane result_ScrollPane;
-    private JLabel maxError_Label;
-    private JLabel minError_Label;
-    private JLabel aveError_Label;
-    private JLabel maxError_Value;
-    private JLabel minError_Value;
-    private JLabel aveError_Value;
+    
+    private JLabel APp_Label;
+    private JLabel APp_Value;
+    private JLabel APa_Label;
+    private JLabel APa_Value;
+    private JLabel APb_Label;
+    private JLabel APb_Value;
+    private JLabel APc_Label;
+    private JLabel APc_Value;
+    private JLabel RPp_Label;
+    private JLabel RPp_Value;
+    private JLabel RPa_Label;
+    private JLabel RPa_Value;
+    private JLabel RPb_Label;
+    private JLabel RPb_Value;
+    private JLabel RPc_Label;
+    private JLabel RPc_Value;
     
     private JTable settingPoints_Table;
     private JTable readingPoints_Table;

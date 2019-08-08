@@ -13,6 +13,7 @@ import javax.swing.JOptionPane;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 //import MyTracker.Register;
 
 /**
@@ -98,6 +99,7 @@ public class TrackerThread implements Runnable {
     private boolean moving = false;
     private boolean auto2manual = false;
     private double[][] repeatDiff = new double[150][3];//位姿测试数据存储
+    private double[][] repeatTJ = new double[550][3];//轨迹启、终点测试数据存储
     private double[][] repeatMT = new double [24][3];//最小定位时间实际坐标数据存储
     private double[][] repeatSE = new double [60][3];//摆动偏差实际坐标数据存储
     private double[][] Result_DataSE = new double [3][9];//摆动偏差测试结果数据存储
@@ -444,6 +446,7 @@ public class TrackerThread implements Runnable {
                         System.out.println(e);
                     }
                     frame.SetCmdSeqString("开始轨迹测试");
+                            
                     StartContinueMeasurement();
                     SetCurrEvent(CURRENTEVENT.STARTBACKGROUND_STEP1_EVENT);
                     break;
@@ -625,11 +628,25 @@ public class TrackerThread implements Runnable {
             AverageFilter filter = new AverageFilter();
             if(GetCurrProcess() == CURRENTPROCESS.TRAJECTORY_PAGE_CONTINUE_PROCESS) {
                 IntervalTrigger continueTrigger = new IntervalTrigger(0.005);
-                MeasureCfg cfg = new MeasureCfg(5,filter,startTrigger,continueTrigger);
-
-                tracker.setBkndMeasureEventRate(nEventRate);
+                MeasureCfg cfg = new MeasureCfg(100,filter,startTrigger,continueTrigger);
+                
                 tracker.setBkndMeasureBlocking(true);
+                tracker.setBkndMeasureEventRate(nEventRate);
                 tracker.startBkndMeasurePoint(cfg);
+
+//                tracker.setBlocking(true);
+//                tracker.setMeasureEventRate(nEventRate);
+//                tracker.startMeasurePoint(cfg);
+//                for(int i = 0; i < 10; i++){
+//                    try{
+//                        mData = tracker.readBkndMeasurePointData(); 
+//                    }
+//                    catch(TrackerException e){
+//                        System.out.println(e);
+//                    }
+//                }
+                
+                System.out.println("333333333333333333333333333333333333");
             }
             else {
                 IntervalTrigger continueTrigger = new IntervalTrigger(0.1);
@@ -642,7 +659,10 @@ public class TrackerThread implements Runnable {
             
             if(nEventRate == 1) {
                 if(GetCurrProcess() == CURRENTPROCESS.TRAJECTORY_PAGE_CONTINUE_PROCESS) {
-                    mData = tracker.readBkndMeasurePointData();
+                    System.out.println("44444444444444444444444444444");
+                    mData = tracker.readBkndMeasurePointData();                     
+                    System.out.println("55555555555555555555555555"); 
+//                    mData = tracker.readMeasurePointData();
                 }
                 else {
                     mData = tracker.readMeasurePointData();
@@ -662,7 +682,9 @@ public class TrackerThread implements Runnable {
             }
         }
         catch(TrackerException e) {
+            System.out.println("66666666666666666666666666");
             System.out.println(e);
+            System.out.println("77777777777777777777777777");
         }
     }
     
@@ -675,14 +697,9 @@ public class TrackerThread implements Runnable {
             if(GetCurrProcess() == CURRENTPROCESS.POSE_PAGE_CONTINUE_PROCESS) {   
                 posePanel.SetTrackerValue(Coordinate_Transformation(values));
                 posePanel.AddPointsDisplay(values);
-
                 repeatDiff[times*5 + currPoint][0] = Double.parseDouble(String.valueOf(values[0]));
                 repeatDiff[times*5 + currPoint][1] = Double.parseDouble(String.valueOf(values[1]));
                 repeatDiff[times*5 + currPoint][2] = Double.parseDouble(String.valueOf(values[2]));
-
-            }
-            if(GetCurrProcess() == CURRENTPROCESS.TRAJECTORY_PAGE_CONTINUE_PROCESS) {
-                trajPanel.SetPointsValue(times, values);
             }
             if(GetCurrProcess() == CURRENTPROCESS.MINTIME_PAGE_CONTINUE_PROCESS){
                 minTimeLocalPanel.SetTrackerValue(values);
@@ -792,7 +809,7 @@ public class TrackerThread implements Runnable {
         dataBuf[pointCnt][0] = Double.parseDouble(String.valueOf(v[0]));
         dataBuf[pointCnt][1] = Double.parseDouble(String.valueOf(v[1]));
         dataBuf[pointCnt][2] = Double.parseDouble(String.valueOf(v[2]));
-        ++pointCnt;
+        ++pointCnt;   
         if(pointCnt >= dataBuf.length) {
             pointCnt = 0;
             double temp_X = 0.0,temp_Y = 0.0,temp_Z = 0.0;
@@ -852,19 +869,7 @@ public class TrackerThread implements Runnable {
                         }
                     }
                     //位姿检测数据处理
-                    if(GetCurrProcess() == CURRENTPROCESS.POSE_PAGE_CONTINUE_PROCESS) {
-                        /*
-                        //坐标转换
-                        double R_Data = base[0] * base[5] * base[10] + base[1] * base[6] * base[8] + base[2] * base[4] * base[9]
-                                - base[2] * base[5] * base[8] - base[1] * base[4] * base[10] - base[0] * base[6] * base[9];
-                        double[] tem_values = new double[3];
-                        for(int i = 0;i < 3; i++){  
-                            tem_values[i] = Double.parseDouble(String.valueOf(values[i]));
-                            tem_values[i] = (tem_values[i] - base[12+i]) / R_Data;
-                            values[i] = tem_values[i];
-
-                        }
-                        */                  
+                    if(GetCurrProcess() == CURRENTPROCESS.POSE_PAGE_CONTINUE_PROCESS) {                 
                         posePanel.SetTrackerValue(Coordinate_Transformation(values));
                         posePanel.AddPointsDisplay(values);
                         posePanel.SetSelectionRow_Result(times);
@@ -969,6 +974,43 @@ public class TrackerThread implements Runnable {
                             return 1;
                         }
                     }
+                    /*
+                    //轨迹监测数据处理
+                    if(GetCurrProcess() == CURRENTPROCESS.TRAJECTORY_PAGE_CONTINUE_PROCESS) {      
+                        repeatTJ[times*2 + currPoint-1][0] = dataBuf[dataBuf.length-1][0];                      
+                        repeatTJ[times*2 + currPoint-1][1] = dataBuf[dataBuf.length-1][1];
+                        repeatTJ[times*2 + currPoint-1][2] = dataBuf[dataBuf.length-1][2];
+                        if(currPoint >= 2){
+                            currPoint = 0;
+                            ++times;
+                        }
+                        if(times >= 10){
+                            times = 0;
+                            num = 0;
+                            StopContinueMeasurement();
+
+                            double[] aveStart = new double[3]; 
+                            double[] aveEnd = new double[3];
+                            for(int i = 0; i < 20; i++){
+                                if(i % 2 == 0){
+                                    aveStart[0] += repeatTJ[i][0];
+                                    aveStart[1] += repeatTJ[i][1];
+                                    aveStart[2] += repeatTJ[i][2];
+                                }else{
+                                    aveEnd[0] += repeatTJ[i][0];
+                                    aveEnd[1] += repeatTJ[i][1];
+                                    aveEnd[2] += repeatTJ[i][2];
+                                }   
+                            }
+                            for(int i = 0; i < 3; i++){
+                                    aveStart[0] /= 10;
+                                    aveStart[1] /= 10;
+                                    aveStart[2] /= 10;
+                            }
+                        }
+
+                    } 
+                    */
                     //最小定位时间监测数据处理
                     if(GetCurrProcess() == CURRENTPROCESS.MINTIME_PAGE_CONTINUE_PROCESS) {
                         minTimeLocalPanel.SetTrackerValue(values);
@@ -1198,9 +1240,7 @@ public class TrackerThread implements Runnable {
         
         return 0;
     }
-   
-    
-    
+ 
 private void ContinueMeasurementScara(){
         while(true) {
             try {
@@ -1222,7 +1262,7 @@ private void ContinueMeasurementScara(){
                         values[0] = dist_VecX * 1000;
                         values[1] = dist_VecY * 1000;
                         values[2] = dist_VecZ * 1000;
-                        int ret=ContinueMeasurementScara_Process(values);
+                        int ret = ContinueMeasurementScara_Process(values);
                         if(ret == 1) break;                     
                     }
                 }
@@ -1331,7 +1371,9 @@ private void ContinueMeasurementScara(){
                     MeasurePointData mData;
                     if(nEventRate == 1) {
                         mData = tracker.readBkndMeasurePointData();
+//                        mData = tracker.readMeasurePointData();
                         if(mData != null) {
+                            System.out.println("TRAJECTORY_PAGE_CONTINUE_PROCESS:1374 000000000000000000000000000000000000000000000000000");
                             double dist_VecZ = mData.distance() * Math.cos(mData.zenith());
                             double dist_VecXY = mData.distance() * Math.sin(mData.zenith());
                             double dist_VecX = dist_VecXY * Math.cos(mData.azimuth());
@@ -1345,7 +1387,9 @@ private void ContinueMeasurementScara(){
                     }
                 }
                 catch(TrackerException e) {
+                    System.out.println("888888888888888888888888888888888888888");
                     System.out.println(e);
+                    System.out.println("9999999999999999999999999999999999");
                 }
             }
         }, 0, 10);
@@ -1355,8 +1399,8 @@ private void ContinueMeasurementScara(){
         dataBuf[pointCnt][0] = Double.parseDouble(String.valueOf(values[0]));
         dataBuf[pointCnt][1] = Double.parseDouble(String.valueOf(values[1]));
         dataBuf[pointCnt][2] = Double.parseDouble(String.valueOf(values[2]));
-
         ++pointCnt;
+        System.out.println("TRAJECTORY_PAGE_CONTINUE_PROCESS:1398");
         if(pointCnt == 3) {
             pointCnt = 0;
             double average_X = (dataBuf[0][0] + dataBuf[1][0] + dataBuf[2][0]) / 3.0;
@@ -1375,7 +1419,7 @@ private void ContinueMeasurementScara(){
             if(r_X <= 0.1 && r_Y <= 0.1 && r_Z <= 0.1) {
                 if(moving == true) {
                     moving = false;
-                    if(currPoint >= 50) {
+                    if(currPoint >= 10) {
                         currPoint = 0;
 
                         double[] before = new double[3];
@@ -1384,7 +1428,7 @@ private void ContinueMeasurementScara(){
                         if(times == 0) {
                             List ret = LineDesign(curveData);
                             trajPanel.AddCurve(ret);
-
+                            System.out.println("1438XXXXXXXXXXXXXXXXXXXXXXX");
                             for(int i = 0;i < ret.size();i+=3) {
                                 before[i % 3] = Double.parseDouble(ret.get(i).toString());
                                 before[i % 3 + 1] = Double.parseDouble(ret.get(i + 1).toString());
@@ -1394,8 +1438,10 @@ private void ContinueMeasurementScara(){
                                 curveRot.add(after[1]);
                                 curveRot.add(after[2]);
                             }
+                            System.out.println("1447XXXXXXXXXXXXXXXXXXXXXXX");
                             trajPanel.AddCurveRotation(curveRot);
                         }
+                        System.out.println("1450XXXXXXXXXXXXXXXXXXXXXXX");
                         trajPanel.AddCurve(curveData);
                         for(int i = 0;i < curveData.size();i+=3) {
                             before[i % 3] = Double.parseDouble(curveData.get(i).toString());
@@ -1406,6 +1452,7 @@ private void ContinueMeasurementScara(){
                             curveRot.add(after[1]);
                             curveRot.add(after[2]);
                         }
+                        System.out.println("1461XXXXXXXXXXXXXXXXXXXXXXX");
                         trajPanel.AddCurveRotation(curveRot);
 
                         curveData.clear();
@@ -1413,6 +1460,151 @@ private void ContinueMeasurementScara(){
                         times++;
                         if(times >= 10) {
                             StopContinueMeasurement();
+                            
+                            double[] StartPointTJ = new double[3];
+                            double[] EndPointTJ = new double[3];
+                            double[][] MeasurementPointTJ = new double[10][3];
+                            for(int i = 0; i < 2; i++){
+                                for(int j = 0; j < 3; j++){
+                                    if(i == 0)
+                                        StartPointTJ[j] = Double.parseDouble(String.valueOf(trajPanel.getValueAt(i,j+1)));
+                                    if(i == 1)
+                                        EndPointTJ[j] = Double.parseDouble(String.valueOf(trajPanel.getValueAt(i,j+1)));
+                                }   
+                            }
+                            double IntervalData = (StartPointTJ[0] - EndPointTJ[0]) / 10;
+                            for(int i = 0; i < 10; i++){
+                                if(i == 0){
+                                     MeasurementPointTJ[i][0] = StartPointTJ[0];
+                                }else{
+                                    MeasurementPointTJ[i][0] -= IntervalData;
+                                }
+                                MeasurementPointTJ[i][1] = StartPointTJ[1];
+                                MeasurementPointTJ[i][2] = StartPointTJ[2];                               
+                            }
+                            System.out.println("MeasurementPointTJ[9][0]" + MeasurementPointTJ[9][0]);
+                            
+                            double[] LinePointsA = new double[3];
+                            double[] LinePointsB = new double[3];
+                            double[] PlanePointsC = new double[3];
+                            double[] PlanePointsD = new double[3];
+                            double[] PlanePointsE = new double[3];
+                            double[] IntersectionPoint;
+                            double[][] IntersectionPointStore = new double[100][3];
+                            double[][] IntersectionPointData = new double[10][3];
+                            double[] Point_aveX = new double[10];
+                            double[] Point_aveY = new double[10];
+                            double[] Point_aveZ = new double[10];
+                            for(int num = 0; num < 10; num++){
+                                for(int i = 0; i < 10; i++){
+                                    LinePointsA = repeatTJ[num*50+i];
+                                    LinePointsB = repeatTJ[num*50+i+1];
+                                    PlanePointsC = MeasurementPointTJ[i];
+                                    for(int j = 0; j < 3; j++){
+                                        PlanePointsD = MeasurementPointTJ[i];
+                                        PlanePointsE = MeasurementPointTJ[i];
+                                        if(j == 1)
+                                            PlanePointsD[j] -= 10.0;
+                                        if(j == 2)
+                                            PlanePointsE[j] += 10.0 ;
+                                    }
+                                    IntersectionPoint = LinePlanePoint(LinePointsA,LinePointsB,PlanePointsC,PlanePointsD,PlanePointsE);
+                                    IntersectionPointStore[num*10+i] = IntersectionPoint;
+                                    switch(i){
+                                        case 0 :
+                                            IntersectionPointData[i][0] += IntersectionPoint[0];
+                                            IntersectionPointData[i][1] += IntersectionPoint[1];
+                                            IntersectionPointData[i][2] += IntersectionPoint[2];
+                                            break;
+                                        case 1 :
+                                            IntersectionPointData[i][0] += IntersectionPoint[0];
+                                            IntersectionPointData[i][1] += IntersectionPoint[1];
+                                            IntersectionPointData[i][2] += IntersectionPoint[2];
+                                            break;
+                                        case 2 :
+                                            IntersectionPointData[i][0] += IntersectionPoint[0];
+                                            IntersectionPointData[i][1] += IntersectionPoint[1];
+                                            IntersectionPointData[i][2] += IntersectionPoint[2];
+                                            break;
+                                        case 3 :
+                                            IntersectionPointData[i][0] += IntersectionPoint[0];
+                                            IntersectionPointData[i][1] += IntersectionPoint[1];
+                                            IntersectionPointData[i][2] += IntersectionPoint[2];
+                                            break;
+                                        case 4 :
+                                            IntersectionPointData[i][0] += IntersectionPoint[0];
+                                            IntersectionPointData[i][1] += IntersectionPoint[1];
+                                            IntersectionPointData[i][2] += IntersectionPoint[2];
+                                            break;
+                                        case 5 :  
+                                            IntersectionPointData[i][0] += IntersectionPoint[0];
+                                            IntersectionPointData[i][1] += IntersectionPoint[1];
+                                            IntersectionPointData[i][2] += IntersectionPoint[2];
+                                            break;
+                                        case 6 : 
+                                            IntersectionPointData[i][0] += IntersectionPoint[0];
+                                            IntersectionPointData[i][1] += IntersectionPoint[1];
+                                            IntersectionPointData[i][2] += IntersectionPoint[2];
+                                            break;
+                                        case 7 :  
+                                            IntersectionPointData[i][0] += IntersectionPoint[0];
+                                            IntersectionPointData[i][1] += IntersectionPoint[1];
+                                            IntersectionPointData[i][2] += IntersectionPoint[2];
+                                            break;
+                                        case 8 : 
+                                            IntersectionPointData[i][0] += IntersectionPoint[0];
+                                            IntersectionPointData[i][1] += IntersectionPoint[1];
+                                            IntersectionPointData[i][2] += IntersectionPoint[2];
+                                            break;
+                                        case 9 :
+                                            IntersectionPointData[i][0] += IntersectionPoint[0];
+                                            IntersectionPointData[i][1] += IntersectionPoint[1];
+                                            IntersectionPointData[i][2] += IntersectionPoint[2];
+                                            break;
+                                        default:
+                                            System.out.println("ERROR");
+                                            break;
+                                    }
+                                }
+                            }
+                            for(int i = 0; i < 10; i++){
+                                Point_aveX[i] = IntersectionPointData[i][0] / 10;
+                                Point_aveY[i] = IntersectionPointData[i][1] / 10;
+                                Point_aveZ[i] = IntersectionPointData[i][2] / 10;
+                            }
+                            List<Double> PointsData = new ArrayList<Double>();
+                            for(int i = 0; i < 10; i++){
+                                PointsData.add(Math.sqrt(Math.pow(Point_aveX[i] - MeasurementPointTJ[i][0], 2) 
+                                        + Math.pow(Point_aveY[i] - MeasurementPointTJ[i][0], 2) + Math.pow(Point_aveZ[i] - MeasurementPointTJ[i][2], 2)));
+                            }
+                            double ATp = Collections.max(PointsData);
+                            trajPanel.RepeatDiff_ATp(ATp);
+                            
+                            
+                            double[] l = new double[10];
+                            double[][] L_Data = new double[10][10];
+                            double[] avel = new double[10];
+                            double[] S = new double[10];
+                            List<Double> SData = new ArrayList<Double>();
+                            for(int i = 0; i < 10; i++){
+                                for(int j = 0; j < 10; j++){
+                                    l[i] = Math.sqrt(Math.pow(IntersectionPointStore[j*10+i][0] - Point_aveX[i],2)
+                                            + Math.pow(IntersectionPointStore[j*10+i][1] - Point_aveY[i],2) 
+                                            + Math.pow(IntersectionPointStore[j*10+i][2] - Point_aveZ[i],2));
+                                    L_Data[i][j] = l[i];
+                                    avel[i] += l[i];
+                                }
+                                avel[i] /= 10;  
+                                for(int j = 0; j < 10; j++){
+                                    S[i] += Math.pow(L_Data[i][j] - avel[i] , 2);
+                                }
+                                S[i] /= 10 - 1;
+                                S[i] = Math.sqrt(S[i]);
+                                SData.add(avel[i] + 3 * S[i]);
+                            }
+                            double RTp = Collections.max(SData);
+                            trajPanel.RepeatDiff_RTp(RTp);
+                            
                         }
                     }
                 }
@@ -1420,19 +1612,27 @@ private void ContinueMeasurementScara(){
             else {
                 moving = true;
             }
-            //30ms记录一个点位，最后从所有点位中取出50个点位给校验库使用
             if(moving == true) {
                 Object[] obj = new Object[3];
                 obj[0] = dataBuf[pointCnt][0];
                 obj[1] = dataBuf[pointCnt][1];
                 obj[2] = dataBuf[pointCnt][2];
-                trajPanel.SetPointsValue(times, obj);
-
+                //trajPanel.SetPointsValue(times, obj);
+                Object[] value = Coordinate_Transformation(obj);
+                trajPanel.SetPointsValue(times, values);                               
+                repeatTJ[times*50 + currPoint][0] = Double.parseDouble(String.valueOf(value[0]));
+                repeatTJ[times*50 + currPoint][1] = Double.parseDouble(String.valueOf(value[1]));
+                repeatTJ[times*50 + currPoint][2] = Double.parseDouble(String.valueOf(value[2]));
+                
                 curveData.add(dataBuf[pointCnt][0]);
                 curveData.add(dataBuf[pointCnt][1]);
                 curveData.add(dataBuf[pointCnt][2]);
-
+                System.out.println("1464 currPoint：" + currPoint);
                 ++currPoint;
+
+                
+
+            
             }
         }
     }
@@ -1496,6 +1696,8 @@ private void ContinueMeasurementScara(){
                     if(tracker != null) {
                         tracker.stopBkndMeasurePoint();
                         tracker.setBkndMeasureBlocking(false);
+//                        tracker.stopMeasurePoint();
+//                        tracker.setBlocking(false);
                     }
                 }
                 catch(TrackerException e) {
@@ -1506,8 +1708,10 @@ private void ContinueMeasurementScara(){
             case TRAJECTORY_PAGE_STOPMEASURE_PROCESS:
                 try {
                     if(tracker != null) {
-                        tracker.stopBkndMeasurePoint();
-                        tracker.setBkndMeasureBlocking(false);
+//                        tracker.stopBkndMeasurePoint();
+//                        tracker.setBkndMeasureBlocking(false);
+                        tracker.stopMeasurePoint();
+                        tracker.setBlocking(false);
                     }
                 }
                 catch(TrackerException e) {
@@ -2451,6 +2655,7 @@ private void ContinueMeasurementScara(){
             
         return Jab;
     }  
+    //3x3与3x1矩阵加法
     private double[][] Adding_Matrices(final double[][] Ja,final double[][] Jb){
         double[][] Jab = new double[3][1];
         Jab[0][0] = Ja[0][0] + Jb[0][0];
@@ -2458,5 +2663,34 @@ private void ContinueMeasurementScara(){
         Jab[2][0] = Ja[2][0] + Jb[2][0];
         return Jab;
     }
-            
+    //直线跟平面交点
+     private double[] LinePlanePoint(final double[] LinePointsA,final double[] LinePointsB,
+             final double[] PlanePointsC,final double[] PlanePointsD,final double[] PlanePointsE){
+        double[] IntersectionPoint = new double[3];
+        //L直线矢量
+        double m = LinePointsA[0] - LinePointsB[0];
+        double n = LinePointsA[1] - LinePointsB[1];
+        double p = LinePointsA[2] - LinePointsB[2];
+        //平面方程Ax+By+Cz+D=0 行列式计算
+        double A = PlanePointsC[1] * PlanePointsD[2] + PlanePointsD[1] * PlanePointsE[2] + PlanePointsE[1] * PlanePointsC[2]
+                - PlanePointsC[1] * PlanePointsE[2] - PlanePointsD[1] * PlanePointsC[2] - PlanePointsE[1] * PlanePointsD[2];
+        double B = 0 - (PlanePointsC[0] * PlanePointsD[2] + PlanePointsD[0] * PlanePointsE[2] + PlanePointsE[0] * PlanePointsC[2]
+                - PlanePointsE[0] * PlanePointsD[2] - PlanePointsD[0] * PlanePointsC[2] - PlanePointsC[0] * PlanePointsE[2]);
+        double C = PlanePointsC[0] * PlanePointsD[1] + PlanePointsD[0] * PlanePointsE[1] + PlanePointsE[0] * PlanePointsC[1]
+                - PlanePointsC[0] * PlanePointsE[1] - PlanePointsD[0] * PlanePointsC[1] - PlanePointsE[0] * PlanePointsD[1];
+        double D = 0 - (PlanePointsC[0] * PlanePointsD[1] * PlanePointsE[2] + PlanePointsD[0] * PlanePointsE[1] *PlanePointsC[2] + PlanePointsE[0] * PlanePointsC[1] * PlanePointsD[2]
+                - PlanePointsC[0] * PlanePointsE[1] * PlanePointsD[2] - PlanePointsD[0] * PlanePointsC[1]  * PlanePointsE[2] - PlanePointsE[0] * PlanePointsD[1] * PlanePointsC[2]);
+        //判断平面与直线是否平行
+        if(A * m + B * n + C * p == 0){
+            IntersectionPoint = null;
+        }
+        else{
+            //系数比值
+            double t = 0 -(LinePointsA[0] * A + LinePointsA[1] * B + LinePointsA[2] * C + D) / (A * m + B * n + C * p);
+            IntersectionPoint[0] = LinePointsA[0] + m * t;
+            IntersectionPoint[1] = LinePointsA[1] + n * t;
+            IntersectionPoint[2] = LinePointsA[2] + p * t;
+        }      
+         return IntersectionPoint;
+     }
 }
