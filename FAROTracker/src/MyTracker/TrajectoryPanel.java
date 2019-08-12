@@ -279,6 +279,10 @@ public class TrajectoryPanel extends MyPanel{
             JOptionPane.showMessageDialog(this, "测量进行中，请稍后重试！");
             return;
         }
+        if(trackerThread.GetCoordTransformFlag() == false) {
+            JOptionPane.showMessageDialog(this, "请先进行自动标定或点击手动计算完成标定！");
+            return;
+        }
         trackerThread.ProcessChanged(CURRENTPROCESS.TRAJECTORY_PAGE_CONTINUE_PROCESS);
         trackerThread.StartBackgroundCalibration();
         trajCurve.ClearLineTrajectory();

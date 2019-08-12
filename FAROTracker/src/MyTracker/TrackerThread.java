@@ -1466,21 +1466,31 @@ private void ContinueMeasurementScara(){
                             double[][] MeasurementPointTJ = new double[10][3];
                             for(int i = 0; i < 2; i++){
                                 for(int j = 0; j < 3; j++){
-                                    if(i == 0)
+                                    if(i == 0){
                                         StartPointTJ[j] = Double.parseDouble(String.valueOf(trajPanel.getValueAt(i,j+1)));
-                                    if(i == 1)
+                                        System.out.println("1471  StartPointTJ[" + j + "]" + StartPointTJ[j]);
+                                    }
+                                    if(i == 1){
                                         EndPointTJ[j] = Double.parseDouble(String.valueOf(trajPanel.getValueAt(i,j+1)));
+                                        System.out.println("1474  EndPointTJ[" + j + "]" + EndPointTJ[j]);
+                                    }
+
                                 }   
                             }
-                            double IntervalData = (StartPointTJ[0] - EndPointTJ[0]) / 10;
+                            double IntervalData = (StartPointTJ[0] - EndPointTJ[0]) / 9;
+                            System.out.println("1474  IntervalData"  + IntervalData);
                             for(int i = 0; i < 10; i++){
                                 if(i == 0){
-                                     MeasurementPointTJ[i][0] = StartPointTJ[0];
-                                }else{
-                                    MeasurementPointTJ[i][0] -= IntervalData;
+                                    MeasurementPointTJ[i][0] = StartPointTJ[0];
+                                }
+                                else{
+                                    MeasurementPointTJ[i][0] = MeasurementPointTJ[i-1][0] - IntervalData;
                                 }
                                 MeasurementPointTJ[i][1] = StartPointTJ[1];
-                                MeasurementPointTJ[i][2] = StartPointTJ[2];                               
+                                MeasurementPointTJ[i][2] = StartPointTJ[2];
+                                System.out.println("1490 MeasurementPointTJ[" + i + "][0]" + MeasurementPointTJ[i][0]);
+                                System.out.println("1490 MeasurementPointTJ[" + i + "][1]" + MeasurementPointTJ[i][1]);
+                                System.out.println("1490 MeasurementPointTJ[" + i + "][2]" + MeasurementPointTJ[i][2]);
                             }
                             System.out.println("MeasurementPointTJ[9][0]" + MeasurementPointTJ[9][0]);
                             
@@ -1489,7 +1499,7 @@ private void ContinueMeasurementScara(){
                             double[] PlanePointsC = new double[3];
                             double[] PlanePointsD = new double[3];
                             double[] PlanePointsE = new double[3];
-                            double[] IntersectionPoint;
+                            double[] IntersectionPoint= new double[3];
                             double[][] IntersectionPointStore = new double[100][3];
                             double[][] IntersectionPointData = new double[10][3];
                             double[] Point_aveX = new double[10];
@@ -1498,18 +1508,34 @@ private void ContinueMeasurementScara(){
                             for(int num = 0; num < 10; num++){
                                 for(int i = 0; i < 10; i++){
                                     LinePointsA = repeatTJ[num*50+i];
+                                    System.out.println("1511 LinePointsA  repeatTJ[" + (num*50+i) +"][0]" + repeatTJ[num*50+i][0]);
+                                    System.out.println("1511 LinePointsA  repeatTJ[" + (num*50+i) +"][1]" + repeatTJ[num*50+i][1]);
+                                    System.out.println("1511 LinePointsA  repeatTJ[" + (num*50+i) +"][2]" + repeatTJ[num*50+i][2]);
                                     LinePointsB = repeatTJ[num*50+i+1];
+                                    System.out.println("1514 LinePointsB  repeatTJ[" + (num*50+i+1) +"][0]" + repeatTJ[num*50+i+1][0]);
+                                    System.out.println("1514 LinePointsB  repeatTJ[" + (num*50+i+1) +"][1]" + repeatTJ[num*50+i+1][1]);
+                                    System.out.println("1514 LinePointsB  repeatTJ[" + (num*50+i+1) +"][2]" + repeatTJ[num*50+i+1][2]);
                                     PlanePointsC = MeasurementPointTJ[i];
+                                    System.out.println("1515 LinePointsC" + MeasurementPointTJ[i]);
                                     for(int j = 0; j < 3; j++){
-                                        PlanePointsD = MeasurementPointTJ[i];
+                                        PlanePointsD = MeasurementPointTJ[i];                                      
                                         PlanePointsE = MeasurementPointTJ[i];
-                                        if(j == 1)
+                                        if(j == 1){
                                             PlanePointsD[j] -= 10.0;
-                                        if(j == 2)
+                                            System.out.println("1521 LinePointsD[1] " + PlanePointsD[j]);
+                                        }
+                                        if(j == 2){
                                             PlanePointsE[j] += 10.0 ;
+                                            System.out.println("1521 LinePointsE[2]" + PlanePointsE[j]);
+                                        }
+                                            
                                     }
                                     IntersectionPoint = LinePlanePoint(LinePointsA,LinePointsB,PlanePointsC,PlanePointsD,PlanePointsE);
+                                    System.out.println("1522 IntersectionPoint[0]" + IntersectionPoint[0]);
+                                    System.out.println("1522 IntersectionPoint[1]" + IntersectionPoint[1]);
+                                    System.out.println("1522 IntersectionPoint[2]" + IntersectionPoint[2]);
                                     IntersectionPointStore[num*10+i] = IntersectionPoint;
+                                    System.out.println("1524 IntersectionPoint[" + (num*10+i) + "]" + IntersectionPointStore[num*10+i]);
                                     switch(i){
                                         case 0 :
                                             IntersectionPointData[i][0] += IntersectionPoint[0];
@@ -1571,13 +1597,20 @@ private void ContinueMeasurementScara(){
                                 Point_aveX[i] = IntersectionPointData[i][0] / 10;
                                 Point_aveY[i] = IntersectionPointData[i][1] / 10;
                                 Point_aveZ[i] = IntersectionPointData[i][2] / 10;
+                                System.out.println("1573   Point_aveX[" + i + "]" + Point_aveX[i]);
+                                System.out.println("1574   Point_aveY[" + i + "]" + Point_aveY[i]);
+                                System.out.println("1575   Point_aveZ[" + i + "]" + Point_aveZ[i]);
+                                
                             }
                             List<Double> PointsData = new ArrayList<Double>();
                             for(int i = 0; i < 10; i++){
                                 PointsData.add(Math.sqrt(Math.pow(Point_aveX[i] - MeasurementPointTJ[i][0], 2) 
                                         + Math.pow(Point_aveY[i] - MeasurementPointTJ[i][0], 2) + Math.pow(Point_aveZ[i] - MeasurementPointTJ[i][2], 2)));
+                                System.out.println("1579   PointsData[" + i + "]" + PointsData);
                             }
+                            
                             double ATp = Collections.max(PointsData);
+                            System.out.println("1582  ATp：" + ATp);
                             trajPanel.RepeatDiff_ATp(ATp);
                             
                             
@@ -1617,13 +1650,21 @@ private void ContinueMeasurementScara(){
                 obj[0] = dataBuf[pointCnt][0];
                 obj[1] = dataBuf[pointCnt][1];
                 obj[2] = dataBuf[pointCnt][2];
+                System.out.println("obj[0]" + obj[0]);
+                System.out.println("obj[1]" + obj[1]);
+                System.out.println("obj[2]" + obj[2]);
                 //trajPanel.SetPointsValue(times, obj);
                 Object[] value = Coordinate_Transformation(obj);
+                System.out.println("value[0]" + value[0]);
+                System.out.println("value[1]" + value[1]);
+                System.out.println("value[2]" + value[2]);
                 trajPanel.SetPointsValue(times, values);                               
                 repeatTJ[times*50 + currPoint][0] = Double.parseDouble(String.valueOf(value[0]));
+                System.out.println(" repeatTJ[" + (times*50 + currPoint) + "][0]" +  repeatTJ[times*50 + currPoint][0]);
                 repeatTJ[times*50 + currPoint][1] = Double.parseDouble(String.valueOf(value[1]));
+                System.out.println((" repeatTJ[" + (times*50 + currPoint) + "][1]" +  repeatTJ[times*50 + currPoint][1]));
                 repeatTJ[times*50 + currPoint][2] = Double.parseDouble(String.valueOf(value[2]));
-                
+                System.out.println((" repeatTJ[" + (times*50 + currPoint) + "][2]" +  repeatTJ[times*50 + currPoint][2]));
                 curveData.add(dataBuf[pointCnt][0]);
                 curveData.add(dataBuf[pointCnt][1]);
                 curveData.add(dataBuf[pointCnt][2]);
@@ -2482,11 +2523,11 @@ private void ContinueMeasurementScara(){
     private Object[] Coordinate_Transformation(final Object[] values){
         double R_Data = base[0] * base[5] * base[10] + base[1] * base[6] * base[8] + base[2] * base[4] * base[9]
                     - base[2] * base[5] * base[8] - base[1] * base[4] * base[10] - base[0] * base[6] * base[9];
-                        double[] tem_values = new double[3];
+        double[] tem_values = new double[3];
         for(int i = 0;i < 3; i++){  
-        tem_values[i] = Double.parseDouble(String.valueOf(values[i]));
-        tem_values[i] = (tem_values[i] - base[12+i]) / R_Data;
-        values[i] = tem_values[i];
+            tem_values[i] = Double.parseDouble(String.valueOf(values[i]));
+            tem_values[i] = (tem_values[i] - base[12+i]) / R_Data;
+            values[i] = tem_values[i];
         }
     return values;
     }
@@ -2669,17 +2710,24 @@ private void ContinueMeasurementScara(){
         double[] IntersectionPoint = new double[3];
         //L直线矢量
         double m = LinePointsA[0] - LinePointsB[0];
+        System.out.println("2691 m :" + m);
         double n = LinePointsA[1] - LinePointsB[1];
+        System.out.println("2691 n :" + n);
         double p = LinePointsA[2] - LinePointsB[2];
+        System.out.println("2691 p :" + p);
         //平面方程Ax+By+Cz+D=0 行列式计算
         double A = PlanePointsC[1] * PlanePointsD[2] + PlanePointsD[1] * PlanePointsE[2] + PlanePointsE[1] * PlanePointsC[2]
                 - PlanePointsC[1] * PlanePointsE[2] - PlanePointsD[1] * PlanePointsC[2] - PlanePointsE[1] * PlanePointsD[2];
+        System.out.println("2691 A :" + A);
         double B = 0 - (PlanePointsC[0] * PlanePointsD[2] + PlanePointsD[0] * PlanePointsE[2] + PlanePointsE[0] * PlanePointsC[2]
                 - PlanePointsE[0] * PlanePointsD[2] - PlanePointsD[0] * PlanePointsC[2] - PlanePointsC[0] * PlanePointsE[2]);
+        System.out.println("2691 B :" + B);
         double C = PlanePointsC[0] * PlanePointsD[1] + PlanePointsD[0] * PlanePointsE[1] + PlanePointsE[0] * PlanePointsC[1]
                 - PlanePointsC[0] * PlanePointsE[1] - PlanePointsD[0] * PlanePointsC[1] - PlanePointsE[0] * PlanePointsD[1];
+        System.out.println("2691 C :" + C);
         double D = 0 - (PlanePointsC[0] * PlanePointsD[1] * PlanePointsE[2] + PlanePointsD[0] * PlanePointsE[1] *PlanePointsC[2] + PlanePointsE[0] * PlanePointsC[1] * PlanePointsD[2]
                 - PlanePointsC[0] * PlanePointsE[1] * PlanePointsD[2] - PlanePointsD[0] * PlanePointsC[1]  * PlanePointsE[2] - PlanePointsE[0] * PlanePointsD[1] * PlanePointsC[2]);
+        System.out.println("2691 D :" + D);
         //判断平面与直线是否平行
         if(A * m + B * n + C * p == 0){
             IntersectionPoint = null;
