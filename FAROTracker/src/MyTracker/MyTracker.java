@@ -1098,8 +1098,8 @@ public class MyTracker extends javax.swing.JFrame
                     Sheet sheet_Struct = book.getSheet(3);      //结构  
                     Sheet sheet_Length = book.getSheet(4);      //长度
                     Sheet sheet_result = book.getSheet(5);      //结果
-                    Sheet sheet_minTime = book.getSheet(6);     //最小定位时间
-                    Sheet sheet_swingerror = book.getSheet(7);  //摆动偏差
+                    //Sheet sheet_minTime = book.getSheet(6);     //最小定位时间
+                    //Sheet sheet_swingerror = book.getSheet(7);  //摆动偏差
                     
                     
                     int rowCnt_data = sheet_data.getRows(); //坐标的行数
@@ -1148,7 +1148,7 @@ public class MyTracker extends javax.swing.JFrame
                             }
                         }
                         trajectoryPanel.SetValueAll(trajData);
-                        
+                        /*
                         String[][] minTimeData = new String[9][6];
                         int rowCnt_minTime = sheet_minTime.getRows();   
                         int columnCnt_minTime = sheet_minTime.getColumns();                    
@@ -1168,7 +1168,7 @@ public class MyTracker extends javax.swing.JFrame
                             }
                         }   
                         swingErrorPanel.SetValueAll(swingerror);
-                           
+                           */
                         if(GetCheckRegister() == true)
                         {
                             checkPanel.ProcessEnable();
@@ -1178,7 +1178,7 @@ public class MyTracker extends javax.swing.JFrame
                             minTimeLocalPanel.ProcessEnable();
                             
                         }
-
+                         
                         Object[] resultObj = checkPanel.GetResultParams();
                         Object[] repeatDiff = posePanel.GetRepeatDiff();
                         Object[] trajResult = trajectoryPanel.GetResult();

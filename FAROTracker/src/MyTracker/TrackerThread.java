@@ -873,19 +873,23 @@ public class TrackerThread implements Runnable {
                         posePanel.SetTrackerValue(Coordinate_Transformation(values));
                         posePanel.AddPointsDisplay(values);
                         posePanel.SetSelectionRow_Result(times);
-                        repeatDiff[times*5 + currPoint-1][0] = dataBuf[dataBuf.length-1][0];                        
-                        repeatDiff[times*5 + currPoint-1][1] = dataBuf[dataBuf.length-1][1];
-                        repeatDiff[times*5 + currPoint-1][2] = dataBuf[dataBuf.length-1][2];
-                        System.out.println("dataBuf:" + dataBuf[dataBuf.length-1][0] + ":" +
-                                dataBuf[dataBuf.length-1][1] + ":" + dataBuf[dataBuf.length-1][2]);
-                        System.out.println("repeatDiff:" + repeatDiff[times*5 + currPoint-1][0] + ":" +
-                                repeatDiff[times*5 + currPoint-1][1] + ":" +
-                                repeatDiff[times*5 + currPoint-1][2]);
+                        Object[] tem_dataBuf = new Object[3];
+                        for(int i = 0;i < 3;++i){
+                            tem_dataBuf[i] = dataBuf[dataBuf.length-1][i];
+                        }
+                        tem_dataBuf  = Coordinate_Transformation(tem_dataBuf);
+                        for(int i = 0;i < 3;++i){
+                            repeatDiff[times*5 + currPoint-1][i] = Double.parseDouble(String.valueOf(tem_dataBuf[i])); 
+                        }                     
+                        System.out.println("追踪仪坐标dataBuf:" + dataBuf[dataBuf.length-1][0] + ":" +
+                                        dataBuf[dataBuf.length-1][1] + ":" + dataBuf[dataBuf.length-1][2]);
+                        System.out.println("机器人坐标repeatDiff:" + repeatDiff[times*5 + currPoint-1][0] + ":" +
+                                        repeatDiff[times*5 + currPoint-1][1] + ":" +repeatDiff[times*5 + currPoint-1][2]);
                         if(currPoint >= 5) {
                             currPoint = 0;
 
                             if(frame.GetTypeSel() == TYPESEL.SIXDOF_ROBOT) {
-                                PoseCheckProgress(posePanel);
+                                //PoseCheckProgress(posePanel);
                             }
                             else if(frame.GetTypeSel() == TYPESEL.SCARA_ROBOT) {
                                 PoseCheckProgress(posePanelScara);
@@ -2519,18 +2523,147 @@ private void ContinueMeasurementScara(){
         System.out.println("WorldPos:"+worldPos[0] + " " + worldPos[1] + " " + worldPos[2] + " " + worldPos[3] + " " + worldPos[4] + " " + worldPos[5]);
         return worldPos;
     }
-     //追踪仪坐标坐标转换基坐标
+      //追踪仪坐标转换基坐标
     private Object[] Coordinate_Transformation(final Object[] values){
-        double R_Data = base[0] * base[5] * base[10] + base[1] * base[6] * base[8] + base[2] * base[4] * base[9]
-                    - base[2] * base[5] * base[8] - base[1] * base[4] * base[10] - base[0] * base[6] * base[9];
-        double[] tem_values = new double[3];
+
+        double[][] R = new double [3][3];
+        double[][] P_B = new double[3][1];
+        double[][] P_T = new double[3][1];
+        double[][] T = new double[3][1];
         for(int i = 0;i < 3; i++){  
-            tem_values[i] = Double.parseDouble(String.valueOf(values[i]));
-            tem_values[i] = (tem_values[i] - base[12+i]) / R_Data;
-            values[i] = tem_values[i];
+            for(int j = 0;j < 3; j++){ 
+                if(i == 0)
+                    R[i][j] = base[j*4];
+                if(i == 1)
+                    R[i][j] = base[j*4+1];
+                if(i == 2)
+                    R[i][j] = base[j*4+2];
+            }
         }
-    return values;
+        //打印旋转向量R
+        for(int i = 0;i < 3; i++){  
+            for(int j = 0;j < 3; j++){ 
+                System.out.println("旋转矩阵R[" + i + "]" + "[" + j + "]" + R[i][j]);
+            }
+        }
+        for(int i = 0;i < 3; i++){ 
+            P_T[i][0] = Double.parseDouble(String.valueOf(values[i]));
+            System.out.println("追踪仪坐标P_T[" + i + "]" + P_T[i][0]);
+        }
+        for(int i = 0;i < 3; i++){ 
+            if(i == 0){
+                T[i][0] = base[12+i];
+                System.out.println("平移向量T[" + i + "]" +  T[i][0]);
+            }
+            if(i == 1){
+                T[i][0] =  - base[12+i];
+            }
+            if(i == 2){
+                T[i][0] =  - (base[12+i]+459.5);               
+            }
+            System.out.println("平移向量T[" + i + "]" +  T[i][0]);
+        }
+        for(int i = 0;i < 3; i++){ 
+            P_T[i][0] =  P_T[i][0] - T[i][0];
+        }
+        //获得逆矩阵
+        R = getN3(R);
+        double[][] tem_data = Matrix3X3_Multiplication3X1(R, P_T);
+        for(int i = 0;i < 3; i++){  
+            values[i] = tem_data[i][0];           
+            System.out.println("机器人坐标values[" + i + "]" + values[i]); 
+        }
+        return values;
     }
+    //代数余子式
+    private double[][] getDY(double[][] data, int h, int v) {
+        int H = data.length;
+        int V = data[0].length;
+        double[][] newData = new double[H - 1][V - 1];
+        for (int i = 0; i < newData.length; i++) {
+            if (i < h - 1) {
+                for (int j = 0; j < newData[i].length; j++) {
+                    if (j < v - 1) {
+                        newData[i][j] = data[i][j];
+                    } else {
+                        newData[i][j] = data[i][j + 1];
+                    }
+                }
+            } else {
+                for (int j = 0; j < newData[i].length; j++) {
+                    if (j < v - 1) {
+                        newData[i][j] = data[i + 1][j];
+                    } else {
+                        newData[i][j] = data[i + 1][j + 1]; 
+                    }
+                }
+            }
+        }
+        //打印
+        for (int i = 0; i < newData.length; i++) {
+            for (int j = 0; j < newData[i].length; j++) {
+                System.out.println("newData[" + i + "][" + j + "] = " + newData[i][j]);
+            }
+        }
+        return newData;
+    }
+    //2阶行列式的数值
+    private double getHL2(double[][] data) {
+        double num1 = data[0][0] * data[1][1];
+        double num2 = - data[0][1] * data[1][0];
+        return num1 + num2;
+    }
+    //3阶行列式的数值
+    private double getHL3(double[][] data) {
+        double num1 = data[0][0] * getHL2(getDY(data, 1, 1));
+        double num2 = -data[0][1] * getHL2(getDY(data, 1, 2));
+        double num3 = data[0][2] * getHL2(getDY(data, 1, 3));
+
+        System.out.println("3阶行列式的数值是：----->" + (num1 + num2 + num3));
+        return num1 + num2 + num3;
+    }
+    //3阶行列式的逆矩阵
+   private double[][] getN3(double[][] data) {
+        // 先是求出整个行列式的数值|data|
+        double A = getHL3(data);
+        double[][] newData = new double[3][3];
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                double num;
+                if ((i + j) % 2 == 0) {// i+j 是偶数 实际是(i+1)+(j+1)
+                        num = getHL2(getDY(data, i + 1, j + 1));
+                } else {
+                        num = -getHL2(getDY(data, i + 1, j + 1));
+                }
+                System.out.println("num=" + num);
+                newData[i][j] = num / A;
+            }
+        }
+        // 转制 代数余子式转制
+        newData = getA_T(newData);
+        // 打印
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                System.out.println("newData[" + i + "][" + j + "]= " + newData[i][j]);
+            }
+        }
+        return newData;
+    }
+    //转置矩阵
+    private double[][] getA_T(double[][] A) {
+        int h = A.length;
+        int v = A[0].length;
+        // 创建和A行和列相反的转置矩阵
+        double[][] A_T = new double[v][h];
+        // 根据A取得转置矩阵A_T
+        for (int i = 0; i < v; i++) {
+            for (int j = 0; j < h; j++) {
+                A_T[j][i] = A[i][j];
+            }
+        }      
+        return A_T;
+    }
+
     //关节坐标转换基坐标
     private double[][] Joint_BaseCoordinates(){
 
@@ -2640,6 +2773,7 @@ private void ContinueMeasurementScara(){
             double[][] offset_L56 = new double[3][1];
 
             offset_X1ecc[0][0] = X1ecc;
+            offset_X1ecc[2][0] = 459.5;
             offset_L23[2][0] = L23;
             offset_L34[2][0] = L34a;
             offset_L34[0][0] = L34b;
